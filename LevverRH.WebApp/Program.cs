@@ -1,16 +1,11 @@
-using LevverRH.Infra.Data.Context;
-using Microsoft.EntityFrameworkCore;
+using LevverRH.Infra.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// Configurar DbContext
-builder.Services.AddDbContext<LevverDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("LevverRH.Infra.Data")
-    ));
+// Infra.IoC - Registra DbContext + Repositories + Services
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
