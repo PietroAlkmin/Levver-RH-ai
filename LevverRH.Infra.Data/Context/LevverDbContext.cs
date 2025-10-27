@@ -16,6 +16,7 @@ public class LevverDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<ProductCatalog> ProductCatalogs { get; set; }
     public DbSet<TenantSubscription> TenantSubscriptions { get; set; }
+    public DbSet<IntegrationCredentials> IntegrationCredentials { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

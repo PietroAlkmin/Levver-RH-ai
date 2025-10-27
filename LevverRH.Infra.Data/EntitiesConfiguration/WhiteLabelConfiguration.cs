@@ -52,11 +52,17 @@ public class WhiteLabelConfiguration : IEntityTypeConfiguration<WhiteLabel>
         builder.Property(w => w.EmailRodape)
             .HasMaxLength(500);
 
+        builder.Property(w => w.Active)
+            .IsRequired()
+            .HasColumnName("active");
+
         builder.Property(w => w.CreatedAt)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnName("created_at");
 
         builder.Property(w => w.UpdatedAt)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnName("updated_at");
 
         // Relacionamento com Tenant (1:1)
         builder.HasOne(w => w.Tenant)

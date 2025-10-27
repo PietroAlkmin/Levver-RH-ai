@@ -8,13 +8,14 @@ public class ProductCatalogConfiguration : IEntityTypeConfiguration<ProductCatal
 {
     public void Configure(EntityTypeBuilder<ProductCatalog> builder)
     {
-        builder.ToTable("product_catalog", "shared");
+        builder.ToTable("products_catalog", "shared");
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.Nome)
+        builder.Property(p => p.ProdutoNome)
             .IsRequired()
-            .HasMaxLength(255);
+            .HasMaxLength(100)
+            .HasColumnName("produto_nome");
 
         builder.Property(p => p.Descricao)
             .HasMaxLength(1000);
@@ -45,7 +46,7 @@ public class ProductCatalogConfiguration : IEntityTypeConfiguration<ProductCatal
             .IsRequired();
 
         // Índices
-        builder.HasIndex(p => p.Nome);
+        builder.HasIndex(p => p.ProdutoNome);
         builder.HasIndex(p => p.Categoria);
         builder.HasIndex(p => p.Ativo);
     }

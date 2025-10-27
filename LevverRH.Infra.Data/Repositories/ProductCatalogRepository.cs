@@ -22,7 +22,7 @@ public class ProductCatalogRepository : Repository<ProductCatalog>, IProductCata
     public async Task<ProductCatalog?> GetByNomeAsync(string nome)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(p => p.Nome == nome);
+            .FirstOrDefaultAsync(p => p.ProdutoNome == nome);
     }
 
     public async Task<IEnumerable<ProductCatalog>> GetByModeloCobrancaAsync(ModeloCobranca modelo)

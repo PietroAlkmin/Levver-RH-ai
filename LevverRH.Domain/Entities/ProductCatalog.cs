@@ -6,7 +6,7 @@ namespace LevverRH.Domain.Entities;
 public class ProductCatalog
 {
     public Guid Id { get; private set; }
-    public string Nome { get; private set; } = null!;
+    public string ProdutoNome { get; private set; } = null!;
     public string? Descricao { get; private set; }
     public string Categoria { get; private set; } = null!;
     public ModeloCobranca ModeloCobranca { get; private set; }
@@ -20,20 +20,20 @@ public class ProductCatalog
     private ProductCatalog() { }
 
     public ProductCatalog(
-        string nome,
+        string produtoNome,
         string categoria,
         ModeloCobranca modeloCobranca,
         decimal valorBasePadrao,
         string? descricao = null)
     {
-        if (string.IsNullOrWhiteSpace(nome))
+        if (string.IsNullOrWhiteSpace(produtoNome))
             throw new DomainException("Nome do produto é obrigatório.");
 
         if (valorBasePadrao < 0)
             throw new DomainException("Preço deve ser maior ou igual a zero.");
 
         Id = Guid.NewGuid();
-        Nome = nome;
+        ProdutoNome = produtoNome;
         Categoria = categoria;
         ModeloCobranca = modeloCobranca;
         ValorBasePadrao = valorBasePadrao;

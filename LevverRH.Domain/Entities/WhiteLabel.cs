@@ -17,6 +17,7 @@ public class WhiteLabel
     public string? FaviconUrl { get; private set; }
     public string? DominioCustomizado { get; private set; }
     public string? EmailRodape { get; private set; }
+    public bool Active { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -34,6 +35,7 @@ public class WhiteLabel
         TenantId = tenantId;
         SystemName = systemName ?? "Talents";
         Tenant = tenant;
+        Active = true;
 
         // Cores padrão
         PrimaryColor = "#0066CC";
@@ -44,6 +46,18 @@ public class WhiteLabel
         BorderColor = "#E0E0E0";
 
         CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Ativar()
+    {
+        Active = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Desativar()
+    {
+        Active = false;
         UpdatedAt = DateTime.UtcNow;
     }
 
