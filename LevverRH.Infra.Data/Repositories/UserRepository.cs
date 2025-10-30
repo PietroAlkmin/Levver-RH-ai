@@ -15,7 +15,7 @@ public class UserRepository : Repository<User>, IUserRepository
     {
         return await _dbSet
             .Include(u => u.Tenant)
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .FirstOrDefaultAsync(u => u.Email == email.ToLower());
     }
 
     public async Task<User?> GetByAzureAdIdAsync(string azureAdId)
@@ -31,4 +31,5 @@ public class UserRepository : Repository<User>, IUserRepository
             .Where(u => u.TenantId == tenantId)
             .ToListAsync();
     }
+
 }

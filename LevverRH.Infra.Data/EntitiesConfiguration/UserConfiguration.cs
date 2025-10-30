@@ -13,8 +13,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(u => u.Id);
 
         builder.Property(u => u.AzureAdId)
-            .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .HasColumnName("azure_ad_id");
 
         builder.Property(u => u.Email)
             .IsRequired()
@@ -37,6 +37,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.FotoUrl)
             .HasMaxLength(500);
 
+        builder.Property(u => u.AuthType)
+            .IsRequired()
+            .HasColumnName("auth_type")
+            .HasConversion<int>();
+
+        builder.Property(u => u.PasswordHash)
+            .HasMaxLength(255)
+            .HasColumnName("password_hash");
+
         // Relacionamento com Tenant
         builder.HasOne(u => u.Tenant)
             .WithMany()
@@ -45,7 +54,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // Índices
         builder.HasIndex(u => u.Email);
-        builder.HasIndex(u => u.AzureAdId).IsUnique();
+
+        builder.HasIndex(u => u.AzureAdId)
+            .IsUnique()
+            .HasFilter("[azure_ad_id] IS NOT NULL");  // ← CRÍTICO!
+
         builder.HasIndex(u => u.TenantId);
 
         // Ignorar Domain Events

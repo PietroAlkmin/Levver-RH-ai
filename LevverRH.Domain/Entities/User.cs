@@ -1,4 +1,5 @@
-﻿using LevverRH.Domain.Enums;
+﻿using BCrypt.Net;
+using LevverRH.Domain.Enums;
 using LevverRH.Domain.Events;
 using LevverRH.Domain.Exceptions;
 
@@ -8,7 +9,6 @@ public class User
 {
     public Guid Id { get; private set; }
     public Guid TenantId { get; private set; }
-    public string AzureAdId { get; private set; } = null!;
     public string Email { get; private set; } = null!;
     public string Nome { get; private set; } = null!;
     public UserRole Role { get; private set; }
@@ -16,6 +16,11 @@ public class User
     public DateTime DataCriacao { get; private set; }
     public DateTime? UltimoLogin { get; private set; }
     public string? FotoUrl { get; private set; }
+
+    // 🆕 Autenticação híbrida
+    public AuthType AuthType { get; private set; }
+    public string? AzureAdId { get; private set; }
+    public string? PasswordHash { get; private set; }
 
     // Navigation
     public virtual Tenant Tenant { get; private set; } = null!;
@@ -26,7 +31,8 @@ public class User
     // EF Constructor
     private User() { }
 
-    public User(
+    // 🆕 Factory Method para Azure AD
+    public static User CriarComAzureAd(
         Guid tenantId,
         string azureAdId,
         string email,
@@ -43,21 +49,72 @@ public class User
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("Nome é obrigatório.");
 
+        if (string.IsNullOrWhiteSpace(azureAdId))
+            throw new DomainException("Azure AD ID é obrigatório para autenticação Azure AD.");
+
         if (tenant == null)
             throw new DomainException("Tenant não existe.");
 
         if (tenant.Status != TenantStatus.Ativo)
             throw new DomainException("Tenant não está ativo.");
 
-        Id = Guid.NewGuid();
-        TenantId = tenantId;
-        AzureAdId = azureAdId;
-        Email = email;
-        Nome = nome;
-        Role = role;
-        Ativo = true;
-        DataCriacao = DateTime.UtcNow;
-        Tenant = tenant;
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Email = email,
+            Nome = nome,
+            Role = role,
+            AuthType = AuthType.AzureAd,
+            AzureAdId = azureAdId,
+            PasswordHash = null,
+            Ativo = true,
+            DataCriacao = DateTime.UtcNow,
+            Tenant = tenant
+        };
+    }
+
+    // 🆕 Factory Method para Local (email/senha)
+    public static User CriarComSenha(
+        Guid tenantId,
+        string email,
+        string nome,
+        string passwordHash,
+        UserRole role,
+        Tenant tenant)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new DomainException("Email é obrigatório.");
+
+        if (!ValidarEmail(email))
+            throw new DomainException("Email inválido.");
+
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new DomainException("Nome é obrigatório.");
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new DomainException("Hash de senha é obrigatório para autenticação local.");
+
+        if (tenant == null)
+            throw new DomainException("Tenant não existe.");
+
+        if (tenant.Status != TenantStatus.Ativo)
+            throw new DomainException("Tenant não está ativo.");
+
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Email = email,
+            Nome = nome,
+            Role = role,
+            AuthType = AuthType.Local,
+            AzureAdId = null,
+            PasswordHash = passwordHash,
+            Ativo = true,
+            DataCriacao = DateTime.UtcNow,
+            Tenant = tenant
+        };
     }
 
     public void Ativar()
@@ -104,6 +161,30 @@ public class User
 
         if (Tenant?.Status != TenantStatus.Ativo)
             throw new TenantInativoException(TenantId);
+    }
+
+    // 🆕 Validar senha (apenas para AuthType.Local)
+    public bool ValidatePassword(string password)
+    {
+        if (AuthType != AuthType.Local)
+            throw new DomainException("Usuário não utiliza autenticação local.");
+
+        if (string.IsNullOrWhiteSpace(PasswordHash))
+            throw new DomainException("Usuário não possui senha cadastrada.");
+
+        return BCrypt.Net.BCrypt.Verify(password, PasswordHash);
+    }
+
+    // 🆕 Atualizar senha (apenas para AuthType.Local)
+    public void AtualizarSenha(string novaSenhaHash)
+    {
+        if (AuthType != AuthType.Local)
+            throw new DomainException("Usuário não utiliza autenticação local.");
+
+        if (string.IsNullOrWhiteSpace(novaSenhaHash))
+            throw new DomainException("Hash de senha é obrigatório.");
+
+        PasswordHash = novaSenhaHash;
     }
 
     public void ClearDomainEvents()
