@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LevverRH.Application.DTOs.Auth;
+using LevverRH.Application.DTOs.Common;
 
 namespace LevverRH.Application.Services.Interfaces;
-internal class IAuthService
+
+public interface IAuthService
 {
+    Task<ResultDTO<LoginResponseDTO>> LoginAsync(LoginRequestDTO dto);
+    Task<ResultDTO<LoginResponseDTO>> RegisterAsync(RegisterRequestDTO dto);
+    Task<ResultDTO<LoginResponseDTO>> LoginWithAzureAdAsync(AzureAdLoginRequestDTO dto);
 }

@@ -1,4 +1,9 @@
-﻿using LevverRH.Domain.Interfaces;
+﻿using FluentValidation;
+using LevverRH.Application.Mappings;
+using LevverRH.Application.Services.Implementations;
+using LevverRH.Application.Services.Interfaces;
+using LevverRH.Application.Validators;
+using LevverRH.Domain.Interfaces;
 using LevverRH.Infra.Data.Context;
 using LevverRH.Infra.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +15,8 @@ namespace LevverRH.Infra.IoC;
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    this IServiceCollection services,
+    IConfiguration configuration)
     {
         // DbContext
         services.AddDbContext<LevverDbContext>(options =>
@@ -28,6 +33,15 @@ public static class DependencyInjection
         services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<IIntegrationCredentialsRepository, IntegrationCredentialsRepository>();
+
+        // AutoMapper
+        services.AddAutoMapper(typeof(AuthMappingProfile));
+
+        // FluentValidation
+        services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+        // Application Services
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

@@ -17,7 +17,7 @@ public class User
     public DateTime? UltimoLogin { get; private set; }
     public string? FotoUrl { get; private set; }
 
-    // 🆕 Autenticação híbrida
+    // Autenticação híbrida
     public AuthType AuthType { get; private set; }
     public string? AzureAdId { get; private set; }
     public string? PasswordHash { get; private set; }
@@ -31,7 +31,7 @@ public class User
     // EF Constructor
     private User() { }
 
-    // 🆕 Factory Method para Azure AD
+    // Factory Method para Azure AD
     public static User CriarComAzureAd(
         Guid tenantId,
         string azureAdId,
@@ -62,7 +62,7 @@ public class User
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            Email = email,
+            Email = email.ToLowerInvariant(), // Normalizar email
             Nome = nome,
             Role = role,
             AuthType = AuthType.AzureAd,
@@ -74,7 +74,7 @@ public class User
         };
     }
 
-    // 🆕 Factory Method para Local (email/senha)
+    // Factory Method para Local (email/senha)
     public static User CriarComSenha(
         Guid tenantId,
         string email,
@@ -105,7 +105,7 @@ public class User
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            Email = email,
+            Email = email.ToLowerInvariant(), // Normalizar email
             Nome = nome,
             Role = role,
             AuthType = AuthType.Local,
@@ -163,7 +163,7 @@ public class User
             throw new TenantInativoException(TenantId);
     }
 
-    // 🆕 Validar senha (apenas para AuthType.Local)
+    // Validar senha (apenas para AuthType.Local)
     public bool ValidatePassword(string password)
     {
         if (AuthType != AuthType.Local)
@@ -175,7 +175,7 @@ public class User
         return BCrypt.Net.BCrypt.Verify(password, PasswordHash);
     }
 
-    // 🆕 Atualizar senha (apenas para AuthType.Local)
+    // Atualizar senha (apenas para AuthType.Local)
     public void AtualizarSenha(string novaSenhaHash)
     {
         if (AuthType != AuthType.Local)

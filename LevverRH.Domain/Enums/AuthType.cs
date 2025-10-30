@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LevverRH.Domain.Enums;
+
 public enum AuthType
 {
-    AzureAd = 1,
-    Local = 2
+    Local = 1,      // Autenticação com email/senha
+    AzureAd = 2     // Autenticação com Azure AD (SSO)
 }

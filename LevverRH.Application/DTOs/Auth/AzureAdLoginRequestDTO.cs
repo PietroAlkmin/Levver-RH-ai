@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LevverRH.Application.DTOs.Auth;
-internal class AzureAdLoginRequestDTO
+
+public class AzureAdLoginRequestDTO
 {
+    public string AzureToken { get; set; } = null!;
 }
