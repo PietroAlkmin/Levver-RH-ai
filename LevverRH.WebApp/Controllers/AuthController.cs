@@ -30,12 +30,26 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Registrar novo usuário
+    /// Registrar nova empresa (Tenant) com usuário administrador - Onboarding
+    /// </summary>
+    [HttpPost("register/tenant")]
+    public async Task<IActionResult> RegisterTenant([FromBody] RegisterTenantRequestDTO dto)
+    {
+        var result = await _authService.RegisterTenantAsync(dto);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Registrar novo usuário em um tenant existente
     /// </summary>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDTO dto)
     {
-        var result = await _authService.RegisterAsync(dto);
+        var result = await _authService.RegisterUserAsync(dto);
 
         if (!result.Success)
             return BadRequest(result);
