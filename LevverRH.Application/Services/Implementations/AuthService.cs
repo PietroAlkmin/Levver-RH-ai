@@ -92,6 +92,74 @@ public class AuthService : IAuthService
 
     public async Task<ResultDTO<LoginResponseDTO>> RegisterAsync(RegisterRequestDTO dto)
     {
+        return await RegisterUserAsync(dto);
+    }
+
+    public async Task<ResultDTO<LoginResponseDTO>> RegisterTenantAsync(RegisterTenantRequestDTO dto)
+    {
+        try
+        {
+            // Verificar se email do admin já existe
+            var existingAdmin = await _userRepository.GetByEmailAsync(dto.EmailAdmin);
+            if (existingAdmin != null)
+                return ResultDTO<LoginResponseDTO>.FailureResult("Email do administrador já cadastrado");
+
+            // Verificar se CNPJ já existe
+            var existingTenant = await _tenantRepository.GetByCnpjAsync(dto.Cnpj);
+            if (existingTenant != null)
+                return ResultDTO<LoginResponseDTO>.FailureResult("CNPJ já cadastrado");
+
+            // Criar Tenant
+            var tenant = new Tenant(
+                nome: dto.NomeEmpresa,
+                cnpj: dto.Cnpj,
+                email: dto.EmailEmpresa,
+                telefone: dto.TelefoneEmpresa,
+                endereco: dto.EnderecoEmpresa
+            );
+
+            await _tenantRepository.AddAsync(tenant);
+
+            // Hash da senha do admin
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+            // Criar usuário Admin usando factory method
+            var adminUser = User.CriarComSenha(
+                tenantId: tenant.Id,
+                email: dto.EmailAdmin,
+                nome: dto.NomeAdmin,
+                passwordHash: passwordHash,
+                role: UserRole.Admin,
+                tenant: tenant
+            );
+
+            await _userRepository.AddAsync(adminUser);
+
+            // Buscar WhiteLabel (se existir)
+            var whiteLabel = await _whiteLabelRepository.GetByTenantIdAsync(tenant.Id);
+
+            // Gerar token JWT
+            var token = GenerateJwtToken(adminUser);
+
+            // Montar response
+            var response = new LoginResponseDTO
+            {
+                Token = token,
+                User = _mapper.Map<UserInfoDTO>(adminUser),
+                Tenant = _mapper.Map<TenantInfoDTO>(tenant),
+                WhiteLabel = whiteLabel != null ? _mapper.Map<WhiteLabelInfoDTO>(whiteLabel) : null
+            };
+
+            return ResultDTO<LoginResponseDTO>.SuccessResult(response, "Empresa e administrador criados com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<LoginResponseDTO>.FailureResult($"Erro ao registrar empresa: {ex.Message}");
+        }
+    }
+
+    public async Task<ResultDTO<LoginResponseDTO>> RegisterUserAsync(RegisterRequestDTO dto)
+    {
         try
         {
             // Verificar se email já existe

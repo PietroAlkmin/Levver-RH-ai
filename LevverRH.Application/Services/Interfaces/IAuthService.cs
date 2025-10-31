@@ -6,6 +6,16 @@ namespace LevverRH.Application.Services.Interfaces;
 public interface IAuthService
 {
     Task<ResultDTO<LoginResponseDTO>> LoginAsync(LoginRequestDTO dto);
-    Task<ResultDTO<LoginResponseDTO>> RegisterAsync(RegisterRequestDTO dto);
+    
+    /// <summary>
+    /// Registrar nova empresa (Tenant) com usuário administrador
+    /// </summary>
+    Task<ResultDTO<LoginResponseDTO>> RegisterTenantAsync(RegisterTenantRequestDTO dto);
+    
+    /// <summary>
+    /// Registrar novo usuário em um tenant existente
+    /// </summary>
+    Task<ResultDTO<LoginResponseDTO>> RegisterUserAsync(RegisterRequestDTO dto);
+    
     Task<ResultDTO<LoginResponseDTO>> LoginWithAzureAdAsync(AzureAdLoginRequestDTO dto);
 }

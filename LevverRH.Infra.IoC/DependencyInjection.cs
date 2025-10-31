@@ -22,7 +22,15 @@ public static class DependencyInjection
         services.AddDbContext<LevverDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly("LevverRH.Infra.Data")
+                sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly("LevverRH.Infra.Data");
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null
+                    );
+                }
             ));
 
         // Repositories
