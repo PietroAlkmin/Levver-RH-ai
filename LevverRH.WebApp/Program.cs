@@ -42,7 +42,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    // Política para Admins
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    
+    // Política para Admins e Recruiters
+    options.AddPolicy("AdminOrRecruiter", policy => 
+        policy.RequireRole("Admin", "Recruiter"));
+    
+    // Política para qualquer usuário autenticado
+    options.AddPolicy("AuthenticatedUser", policy => 
+        policy.RequireAuthenticatedUser());
+});
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -52,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "LevverRH API",
         Version = "v1",
-        Description = "API do sistema LevverRH"
+        Description = "API do sistema LevverRH - Multi-tenant Recruitment System"
     });
 
     // JWT no Swagger
@@ -63,7 +76,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Insira o token JWT no formato: Bearer {seu token}"
+        Description = "Insira o token JWT. Exemplo: Bearer {seu_token}"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -99,14 +112,18 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "LevverRH API v1");
+        c.DocumentTitle = "LevverRH API - Swagger";
+    });
 }
 
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
-app.UseAuthentication();
+app.UseAuthentication();  // ? IMPORTANTE: Deve vir antes do UseAuthorization
 app.UseAuthorization();
 
 app.MapControllers();
