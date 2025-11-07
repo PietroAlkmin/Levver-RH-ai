@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button, Input, Card } from '../../components/common';
+import { AzureAdLoginButton } from '../../components/auth/AzureAdLoginButton';
 
 // Validação com Zod (espelha FluentValidation do backend)
 const loginSchema = z.object({
@@ -87,17 +88,15 @@ export const Login: React.FC = () => {
    </button>
           </div>
 
-    {/* Esqueci a senha */}
-     <div className="text-right">
-  <Link
-              to="/forgot-password"
-       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-       >
-        Esqueceu a senha?
+          {/* Esqueci a senha */}
+          <div className="text-right">
+            <Link
+              to="/reset-password"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Esqueceu a senha?
             </Link>
-          </div>
-
-          {/* Botão de Login */}
+          </div>          {/* Botão de Login */}
    <Button
             type="submit"
             variant="primary"
@@ -112,12 +111,22 @@ export const Login: React.FC = () => {
 
         {/* Divisor */}
         <div className="relative my-6">
-    <div className="absolute inset-0 flex items-center">
-         <div className="w-full border-t border-gray-300"></div>
-       </div>
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
           <div className="relative flex justify-center text-sm">
-        <span className="px-2 bg-white text-gray-500">Ou</span>
-  </div>
+            <span className="px-2 bg-white text-gray-500">Ou</span>
+          </div>
+        </div>
+
+        {/* Login com Microsoft */}
+        <AzureAdLoginButton />
+
+        {/* Divisor */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
         </div>
 
         {/* Cadastro */}

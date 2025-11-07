@@ -9,7 +9,14 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configura serializaÃ§Ã£o JSON para usar camelCase (padrÃ£o JavaScript/TypeScript)
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        // Permite leitura de nÃºmeros como string
+        options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    });
 
 // Database
 builder.Services.AddDbContext<LevverDbContext>(options =>
@@ -45,14 +52,14 @@ builder.Services.AddAuthentication(options =>
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-    // Política para Admins
+    // Polï¿½tica para Admins
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     
-    // Política para Admins e Recruiters
+    // Polï¿½tica para Admins e Recruiters
     options.AddPolicy("AdminOrRecruiter", policy => 
         policy.RequireRole("Admin", "Recruiter"));
     
-    // Política para qualquer usuário autenticado
+    // Polï¿½tica para qualquer usuï¿½rio autenticado
     options.AddPolicy("AuthenticatedUser", policy => 
         policy.RequireAuthenticatedUser());
 });
@@ -95,7 +102,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS para comunicação com React
+// CORS para comunicaï¿½ï¿½o com React
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>
@@ -125,7 +132,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("ReactApp"); // Usar a política específica do React
+app.UseCors("ReactApp"); // Usar a polï¿½tica especï¿½fica do React
 
 app.UseAuthentication();  // ? IMPORTANTE: Deve vir antes do UseAuthorization
 app.UseAuthorization();

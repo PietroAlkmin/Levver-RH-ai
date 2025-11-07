@@ -215,9 +215,167 @@ public class AuthService : IAuthService
 
     public async Task<ResultDTO<LoginResponseDTO>> LoginWithAzureAdAsync(AzureAdLoginRequestDTO dto)
     {
-        // TODO: Implementar login com Azure AD
-        await Task.CompletedTask;
-        return ResultDTO<LoginResponseDTO>.FailureResult("Login com Azure AD ainda não implementado");
+        try
+        {
+            // Validar token do Azure AD
+            var azureClaims = await ValidateAzureAdTokenAsync(dto.AzureToken);
+            
+            if (azureClaims == null)
+                return ResultDTO<LoginResponseDTO>.FailureResult("Token do Azure AD inválido");
+
+            var email = azureClaims.FindFirst(ClaimTypes.Email)?.Value 
+                ?? azureClaims.FindFirst("preferred_username")?.Value
+                ?? azureClaims.FindFirst("upn")?.Value;
+
+            if (string.IsNullOrEmpty(email))
+                return ResultDTO<LoginResponseDTO>.FailureResult("Email não encontrado no token do Azure AD");
+
+            var nome = azureClaims.FindFirst(ClaimTypes.Name)?.Value 
+                ?? azureClaims.FindFirst("name")?.Value 
+                ?? email.Split('@')[0];
+
+            // Buscar usuário existente
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            // Se usuário não existe, criar automaticamente
+            if (user == null)
+            {
+                // Para simplificar, vamos exigir que o tenant já exista
+                // O admin do tenant precisa convidar usuários Azure AD previamente
+                return ResultDTO<LoginResponseDTO>.FailureResult(
+                    "Usuário não cadastrado. Entre em contato com o administrador do sistema.");
+            }
+            else
+            {
+                // Verificar se usuário está configurado para Azure AD
+                if (user.AuthType != AuthType.AzureAd)
+                    return ResultDTO<LoginResponseDTO>.FailureResult("Este usuário não usa autenticação Azure AD");
+
+                // Verificar se usuário está ativo
+                if (!user.Ativo)
+                    return ResultDTO<LoginResponseDTO>.FailureResult("Usuário inativo");
+
+                // Verificar se tenant está ativo
+                if (user.Tenant.Status != TenantStatus.Ativo)
+                    return ResultDTO<LoginResponseDTO>.FailureResult("Tenant inativo");
+
+                // Atualizar dados do usuário se necessário
+                if (user.Nome != nome)
+                {
+                    user.AtualizarNome(nome);
+                    await _userRepository.UpdateAsync(user);
+                }
+            }
+
+            // Atualizar último login
+            user.RegistrarLogin();
+            await _userRepository.UpdateAsync(user);
+
+            // Buscar WhiteLabel
+            var whiteLabel = await _whiteLabelRepository.GetByTenantIdAsync(user.TenantId);
+
+            // Gerar token JWT do sistema
+            var token = GenerateJwtToken(user);
+
+            // Montar response
+            var response = new LoginResponseDTO
+            {
+                Token = token,
+                User = _mapper.Map<UserInfoDTO>(user),
+                Tenant = _mapper.Map<TenantInfoDTO>(user.Tenant),
+                WhiteLabel = whiteLabel != null ? _mapper.Map<WhiteLabelInfoDTO>(whiteLabel) : null
+            };
+
+            return ResultDTO<LoginResponseDTO>.SuccessResult(response, "Login com Azure AD realizado com sucesso");
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<LoginResponseDTO>.FailureResult($"Erro ao realizar login com Azure AD: {ex.Message}");
+        }
+    }
+
+    private async Task<ClaimsPrincipal?> ValidateAzureAdTokenAsync(string token)
+    {
+        try
+        {
+            var azureAdConfig = _configuration.GetSection("AzureAd");
+            var tenantId = azureAdConfig["TenantId"];
+            var clientId = azureAdConfig["ClientId"];
+
+            // Configurar validação do token
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuers = new[]
+                {
+                    $"https://login.microsoftonline.com/{tenantId}/v2.0",
+                    $"https://sts.windows.net/{tenantId}/",
+                    "https://login.microsoftonline.com/common/v2.0" // Para multi-tenant
+                },
+                ValidateAudience = true,
+                ValidAudiences = new[] { clientId, $"api://{clientId}" },
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = await GetAzureAdSigningKeysAsync()
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+            return principal;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao validar token Azure AD: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task<IEnumerable<SecurityKey>> GetAzureAdSigningKeysAsync()
+    {
+        var azureAdConfig = _configuration.GetSection("AzureAd");
+        var tenantId = azureAdConfig["TenantId"] ?? "common";
+        
+        var stsDiscoveryEndpoint = $"https://login.microsoftonline.com/{tenantId}/v2.0/.well-known/openid-configuration";
+        
+        using var httpClient = new HttpClient();
+        var response = await httpClient.GetStringAsync(stsDiscoveryEndpoint);
+        var config = System.Text.Json.JsonDocument.Parse(response);
+        var jwksUri = config.RootElement.GetProperty("jwks_uri").GetString();
+
+        var jwksResponse = await httpClient.GetStringAsync(jwksUri!);
+        var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksResponse);
+
+        return jwks.GetSigningKeys();
+    }
+
+    public async Task<ResultDTO<string>> ResetPasswordAsync(string email, string newPassword)
+    {
+        try
+        {
+            // Buscar usuário por email
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            if (user == null)
+                return ResultDTO<string>.FailureResult("Usuário não encontrado");
+
+            // Verificar se usa autenticação local
+            if (user.AuthType != AuthType.Local)
+                return ResultDTO<string>.FailureResult("Este usuário usa autenticação Azure AD. Não é possível redefinir senha.");
+
+            // Hash da nova senha
+            var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            // Atualizar senha
+            user.AtualizarSenha(newPasswordHash);
+            await _userRepository.UpdateAsync(user);
+
+            return ResultDTO<string>.SuccessResult("Senha redefinida com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<string>.FailureResult($"Erro ao redefinir senha: {ex.Message}");
+        }
     }
 
     private string GenerateJwtToken(User user)

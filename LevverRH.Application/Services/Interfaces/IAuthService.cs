@@ -18,4 +18,9 @@ public interface IAuthService
     Task<ResultDTO<LoginResponseDTO>> RegisterUserAsync(RegisterRequestDTO dto);
     
     Task<ResultDTO<LoginResponseDTO>> LoginWithAzureAdAsync(AzureAdLoginRequestDTO dto);
+    
+    /// <summary>
+    /// Redefinir senha (versão simples para testes)
+    /// </summary>
+    Task<ResultDTO<string>> ResetPasswordAsync(string email, string newPassword);
 }
