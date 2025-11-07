@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevverRH.Infra.IoC", "Levve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevverRH.WebApp", "LevverRH.WebApp\LevverRH.WebApp.csproj", "{CCA6B2CE-4216-4CF6-BC79-F2D6B09CEBE1}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "levverrh.frontend", "LevverRH.FrontEnd\levverrh.frontend.esproj", "{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "LevverRH.Frontend", "LevverRH.Frontend\LevverRH.Frontend.esproj", "{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

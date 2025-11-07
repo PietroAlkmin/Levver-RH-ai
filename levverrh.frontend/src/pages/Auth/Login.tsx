@@ -7,22 +7,22 @@ import { Mail, Lock, LogIn } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button, Input, Card } from '../../components/common';
 
-// ValidaÁ„o com Zod (espelha FluentValidation do backend)
+// Valida√ß√£o com Zod (espelha FluentValidation do backend)
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Email È obrigatÛrio')
-    .email('Email inv·lido'),
+    .min(1, 'Email √© obrigat√≥rio')
+    .email('Email inv√°lido'),
   password: z
     .string()
-    .min(6, 'Senha deve ter no mÌnimo 6 caracteres'),
+    .min(6, 'Senha deve ter no m√≠nimo 6 caracteres'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 /**
- * P·gina de Login
- * Segue padrıes de UX de grandes corporaÁıes
+ * P√°gina de Login
+ * Segue padr√µes de UX de grandes corpora√ß√µes
  */
 export const Login: React.FC = () => {
   const { login, isLoading } = useAuth();
@@ -43,16 +43,16 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
   <Card className="w-full max-w-md">
-        {/* Logo e TÌtulo */}
+        {/* Logo e T√≠tulo */}
 <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
  <LogIn className="text-white" size={32} />
  </div>
    <h1 className="text-3xl font-bold text-gray-900">LevverRH</h1>
-          <p className="text-gray-600 mt-2">FaÁa login para continuar</p>
+          <p className="text-gray-600 mt-2">Fa√ßa login para continuar</p>
       </div>
 
-    {/* Formul·rio */}
+    {/* Formul√°rio */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div>
@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
   {...register('password')}
           type={showPassword ? 'text' : 'password'}
      label="Senha"
-         placeholder="ïïïïïïïï"
+         placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢"
     error={errors.password?.message}
     disabled={isLoading}
            required
@@ -97,7 +97,7 @@ export const Login: React.FC = () => {
             </Link>
           </div>
 
-          {/* Bot„o de Login */}
+          {/* Bot√£o de Login */}
    <Button
             type="submit"
             variant="primary"
@@ -123,7 +123,7 @@ export const Login: React.FC = () => {
         {/* Cadastro */}
 <div className="text-center">
           <p className="text-gray-600">
-  N„o tem uma conta?{' '}
+  N√£o tem uma conta?{' '}
             <Link
               to="/register-tenant"
               className="text-blue-600 hover:text-blue-700 font-semibold"

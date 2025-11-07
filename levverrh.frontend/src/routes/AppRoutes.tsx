@@ -2,14 +2,15 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Login } from '../pages/Auth/Login';
+import { RegisterTenant } from '../pages/Auth/RegisterTenant';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuthStore } from '../stores/authStore';
 
-// Lazy loading de páginas para performance
+// Lazy loading de pÃ¡ginas para performance
 const Dashboard = React.lazy(() => import('../pages/Dashboard/Dashboard'));
 
 /**
- * Configuração de rotas da aplicação
+ * ConfiguraÃ§Ã£o de rotas da aplicaÃ§Ã£o
  */
 export const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
@@ -49,9 +50,9 @@ color: '#363636',
    element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
        />
 
-          {/* Rotas públicas */}
+          {/* Rotas pÃºblicas */}
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/register-tenant" element={<RegisterTenant />} /> */}
+          <Route path="/register-tenant" element={<RegisterTenant />} />
           {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
       {/* Rotas protegidas */}
@@ -65,7 +66,7 @@ color: '#363636',
   />
 
     {/* 404 */}
-  <Route path="*" element={<div>404 - Página não encontrada</div>} />
+  <Route path="*" element={<div>404 - PÃ¡gina nÃ£o encontrada</div>} />
         </Routes>
     </React.Suspense>
     </BrowserRouter>

@@ -21,6 +21,7 @@ export interface RegisterTenantRequest {
   emailAdmin: string;
   nomeAdmin: string;
   password: string;
+  confirmPassword: string;
 }
 
 export interface AzureAdLoginRequest {
