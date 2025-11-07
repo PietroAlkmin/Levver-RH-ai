@@ -95,14 +95,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS (se precisar de frontend)
+// CORS para comunicação com React
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+    options.AddPolicy("ReactApp", policy =>
+  {
+    policy.WithOrigins(
+         "http://localhost:5173",           // Vite dev server
+     "https://localhost:5173"   // HTTPS se usar
+      )
+     .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();        // Importante para JWT
     });
 });
 
@@ -121,7 +125,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("ReactApp"); // Usar a política específica do React
 
 app.UseAuthentication();  // ? IMPORTANTE: Deve vir antes do UseAuthorization
 app.UseAuthorization();

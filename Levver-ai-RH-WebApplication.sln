@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36616.10 d17.14
+VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevverRH.Application", "LevverRH.Application\LevverRH.Application.csproj", "{8ADE19E8-A63A-4290-95F2-DCFA373E9EFD}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevverRH.Infra.IoC", "LevverRH.Infra.IoC\LevverRH.Infra.IoC.csproj", "{EDF42AAE-CE1E-4F55-B742-AA75BC24EE70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LevverRH.WebApp", "LevverRH.WebApp\LevverRH.WebApp.csproj", "{CCA6B2CE-4216-4CF6-BC79-F2D6B09CEBE1}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "levverrh.frontend", "LevverRH.FrontEnd\levverrh.frontend.esproj", "{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,12 @@ Global
 		{CCA6B2CE-4216-4CF6-BC79-F2D6B09CEBE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCA6B2CE-4216-4CF6-BC79-F2D6B09CEBE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCA6B2CE-4216-4CF6-BC79-F2D6B09CEBE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9CBCAFA-4B1E-DC1B-8E0C-E1EB1D418C9B}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
