@@ -70,18 +70,4 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-
-    /// <summary>
-    /// Redefinir senha (versão simples para testes - SEM token)
-    /// </summary>
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO dto)
-    {
-        var result = await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
-
-        if (!result.Success)
-            return BadRequest(result);
-
-        return Ok(result);
-    }
 }

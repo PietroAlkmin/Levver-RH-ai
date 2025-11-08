@@ -88,15 +88,17 @@ export const Login: React.FC = () => {
    </button>
           </div>
 
-          {/* Esqueci a senha */}
-          <div className="text-right">
-            <Link
-              to="/reset-password"
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Esqueceu a senha?
+    {/* Esqueci a senha */}
+     <div className="text-right">
+  <Link
+              to="/forgot-password"
+       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+       >
+        Esqueceu a senha?
             </Link>
-          </div>          {/* Botão de Login */}
+          </div>
+
+          {/* Botão de Login */}
    <Button
             type="submit"
             variant="primary"

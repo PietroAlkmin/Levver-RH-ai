@@ -349,35 +349,6 @@ public class AuthService : IAuthService
         return jwks.GetSigningKeys();
     }
 
-    public async Task<ResultDTO<string>> ResetPasswordAsync(string email, string newPassword)
-    {
-        try
-        {
-            // Buscar usuário por email
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-                return ResultDTO<string>.FailureResult("Usuário não encontrado");
-
-            // Verificar se usa autenticação local
-            if (user.AuthType != AuthType.Local)
-                return ResultDTO<string>.FailureResult("Este usuário usa autenticação Azure AD. Não é possível redefinir senha.");
-
-            // Hash da nova senha
-            var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-
-            // Atualizar senha
-            user.AtualizarSenha(newPasswordHash);
-            await _userRepository.UpdateAsync(user);
-
-            return ResultDTO<string>.SuccessResult("Senha redefinida com sucesso!");
-        }
-        catch (Exception ex)
-        {
-            return ResultDTO<string>.FailureResult($"Erro ao redefinir senha: {ex.Message}");
-        }
-    }
-
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
