@@ -9,7 +9,7 @@ import {
 import { ApiResponse } from '../types/api.types';
 
 /**
- * Serviço de Autenticação
+ * Serviï¿½o de Autenticaï¿½ï¿½o
  * Comunica com os endpoints /api/auth/* do backend
  */
 class AuthService {
@@ -27,7 +27,7 @@ class AuthService {
   }
 
   /**
-   * Registrar novo tenant (empresa) com usuário admin
+   * Registrar novo tenant (empresa) com usuï¿½rio admin
    */
   async registerTenant(
     data: RegisterTenantRequest
@@ -40,7 +40,7 @@ class AuthService {
   }
 
   /**
-   * Registrar novo usuário em tenant existente
+   * Registrar novo usuï¿½rio em tenant existente
    */
   async registerUser(data: RegisterRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await apiClient.post<ApiResponse<LoginResponse>>(
@@ -51,20 +51,59 @@ class AuthService {
   }
 
   /**
-* Login com Azure AD (SSO)
+   * Login com Azure AD (SSO)
    */
   async loginWithAzureAd(
     data: AzureAdLoginRequest
   ): Promise<ApiResponse<LoginResponse>> {
+    const url = `${this.endpoint}/login/azure`;
+    console.log('ðŸ”¹ authService.loginWithAzureAd - URL:', url);
+    console.log('ðŸ”¹ authService.loginWithAzureAd - Data:', data);
+    
     const response = await apiClient.post<ApiResponse<LoginResponse>>(
-    `${this.endpoint}/login/azure`,
+      url,
       data
     );
     return response.data;
   }
 
   /**
-   * Armazena dados de autenticação no localStorage
+   * Completar setup de tenant criado via SSO
+   * (Admin jÃ¡ logado precisa preencher dados da empresa)
+   */
+  async completeTenantSetup(data: {
+    nomeEmpresa: string;
+    cnpj: string;
+    emailEmpresa: string;
+    telefoneEmpresa?: string;
+    enderecoEmpresa?: string;
+  }): Promise<ApiResponse<LoginResponse>> {
+    console.log('ðŸ”¹ authService.completeTenantSetup - Chamando endpoint...');
+    console.log('ðŸ”¹ authService.completeTenantSetup - Data (camelCase):', data);
+    console.log('ðŸ”¹ authService.completeTenantSetup - Token:', localStorage.getItem('token')?.substring(0, 50) + '...');
+    
+    // Converter para PascalCase esperado pelo backend
+    const payload = {
+      NomeEmpresa: data.nomeEmpresa,
+      Cnpj: data.cnpj,
+      EmailEmpresa: data.emailEmpresa,
+      TelefoneEmpresa: data.telefoneEmpresa || null,
+      EnderecoEmpresa: data.enderecoEmpresa || null
+    };
+
+    console.log('ðŸ”¹ authService.completeTenantSetup - Payload (PascalCase):', payload);
+    
+    const response = await apiClient.post<ApiResponse<LoginResponse>>(
+      `${this.endpoint}/complete-tenant-setup`,
+      payload
+    );
+    
+    console.log('ðŸ”¹ authService.completeTenantSetup - Response:', response.data);
+    return response.data;
+  }
+
+  /**
+   * Armazena dados de autenticaÃ§Ã£o no localStorage
    */
   saveAuthData(data: LoginResponse): void {
     localStorage.setItem('token', data.token);
@@ -78,7 +117,7 @@ class AuthService {
   }
 
   /**
-   * Remove dados de autenticação
+   * Remove dados de autenticaï¿½ï¿½o
  */
   clearAuthData(): void {
     localStorage.removeItem('token');
@@ -88,14 +127,14 @@ class AuthService {
   }
 
   /**
-   * Verifica se usuário está autenticado
+   * Verifica se usuï¿½rio estï¿½ autenticado
    */
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
 
   /**
-   * Obtém dados do usuário logado
+   * Obtï¿½m dados do usuï¿½rio logado
    */
   getCurrentUser() {
     const userJson = localStorage.getItem('user');
@@ -103,7 +142,7 @@ class AuthService {
   }
 
   /**
-   * Obtém dados do tenant
+   * Obtï¿½m dados do tenant
    */
   getCurrentTenant() {
     const tenantJson = localStorage.getItem('tenant');
@@ -122,7 +161,7 @@ class AuthService {
     root.style.setProperty('--text-color', whiteLabel.textColor);
     root.style.setProperty('--border-color', whiteLabel.borderColor);
 
-    // Atualizar título da página
+    // Atualizar tï¿½tulo da pï¿½gina
     if (whiteLabel.systemName) {
       document.title = whiteLabel.systemName;
     }

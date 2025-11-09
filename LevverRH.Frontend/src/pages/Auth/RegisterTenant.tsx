@@ -30,24 +30,36 @@ const registerTenantSchema = z.object({
     .string()
     .optional(),
   
-  // Dados do Administrador
+  // Dados do Administrador (opcionais em modo SSO)
   nomeAdmin: z
     .string()
-    .min(2, 'Nome do administrador deve ter no mínimo 2 caracteres'),
+    .min(2, 'Nome do administrador deve ter no mínimo 2 caracteres')
+    .optional()
+    .or(z.literal('')),
   emailAdmin: z
     .string()
-    .min(1, 'Email do administrador é obrigatório')
-    .email('Email inválido'),
+    .email('Email inválido')
+    .optional()
+    .or(z.literal('')),
   password: z
     .string()
     .min(6, 'Senha deve ter no mínimo 6 caracteres')
     .regex(/[A-Z]/, 'Senha deve conter ao menos uma letra maiúscula')
     .regex(/[a-z]/, 'Senha deve conter ao menos uma letra minúscula')
-    .regex(/[0-9]/, 'Senha deve conter ao menos um número'),
+    .regex(/[0-9]/, 'Senha deve conter ao menos um número')
+    .optional()
+    .or(z.literal('')),
   confirmPassword: z
     .string()
-    .min(1, 'Confirmação de senha é obrigatória'),
-}).refine((data) => data.password === data.confirmPassword, {
+    .optional()
+    .or(z.literal('')),
+}).refine((data) => {
+  // Validar senha apenas se foi preenchida
+  if (data.password && data.password.length > 0) {
+    return data.password === data.confirmPassword;
+  }
+  return true;
+}, {
   message: 'As senhas não coincidem',
   path: ['confirmPassword'],
 });
@@ -57,12 +69,19 @@ type RegisterTenantFormData = z.infer<typeof registerTenantSchema>;
 /**
  * Página de Cadastro de Empresa (Tenant)
  * Onboarding completo: empresa + usuário admin
+ * 
+ * Modos de operação:
+ * 1. SSO (usuário logado via Azure AD): apenas dados da empresa (sem senha)
+ * 2. Normal (novo cadastro): empresa + admin com senha
  */
 export const RegisterTenant: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { setAuth, user, tenant } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Detectar se é modo SSO (usuário já logado via Azure AD)
+  const isSsoMode = user !== null && tenant?.status === 'PendenteSetup';
 
   const {
     register,
@@ -74,18 +93,38 @@ export const RegisterTenant: React.FC = () => {
 
   const onSubmit = async (data: RegisterTenantFormData) => {
     setIsLoading(true);
+    
+    console.log('📝 Submit do formulário - Modo SSO:', isSsoMode);
+    console.log('📝 Dados do formulário:', data);
+    
     try {
-      const response = await authService.registerTenant({
-        nomeEmpresa: data.nomeEmpresa,
-        cnpj: data.cnpj,
-        emailEmpresa: data.emailEmpresa,
-        telefoneEmpresa: data.telefoneEmpresa || undefined,
-        enderecoEmpresa: data.enderecoEmpresa || undefined,
-        nomeAdmin: data.nomeAdmin,
-        emailAdmin: data.emailAdmin,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
-      });
+      let response;
+
+      if (isSsoMode) {
+        // Modo SSO: completar setup do tenant existente
+        console.log('🔹 Chamando completeTenantSetup...');
+        response = await authService.completeTenantSetup({
+          nomeEmpresa: data.nomeEmpresa,
+          cnpj: data.cnpj,
+          emailEmpresa: data.emailEmpresa,
+          telefoneEmpresa: data.telefoneEmpresa || undefined,
+          enderecoEmpresa: data.enderecoEmpresa || undefined,
+        });
+        console.log('✅ Resposta completeTenantSetup:', response);
+      } else {
+        // Modo normal: registrar novo tenant com admin
+        response = await authService.registerTenant({
+          nomeEmpresa: data.nomeEmpresa,
+          cnpj: data.cnpj,
+          emailEmpresa: data.emailEmpresa,
+          telefoneEmpresa: data.telefoneEmpresa || undefined,
+          enderecoEmpresa: data.enderecoEmpresa || undefined,
+          nomeAdmin: data.nomeAdmin || '',
+          emailAdmin: data.emailAdmin || '',
+          password: data.password || '',
+          confirmPassword: data.confirmPassword || '',
+        });
+      }
 
       if (response.success && response.data) {
         // Salvar autenticação
@@ -99,12 +138,42 @@ export const RegisterTenant: React.FC = () => {
 
         toast.success('Empresa cadastrada com sucesso! Bem-vindo ao LevverRH! 🎉');
         navigate('/dashboard');
+      } else if (response.success && isSsoMode) {
+        // Modo SSO: setup concluído, mas precisamos relogar para pegar tenant atualizado
+        toast.success('Cadastro concluído! Redirecionando...');
+        
+        // Atualizar tenant no localStorage manualmente
+        const currentTenant = authService.getCurrentTenant();
+        if (currentTenant) {
+          currentTenant.status = 'Ativo';
+          currentTenant.nome = data.nomeEmpresa;
+          currentTenant.cnpj = data.cnpj;
+          currentTenant.email = data.emailEmpresa;
+          currentTenant.telefone = data.telefoneEmpresa;
+          currentTenant.endereco = data.enderecoEmpresa;
+          localStorage.setItem('tenant', JSON.stringify(currentTenant));
+          
+          // Atualizar Zustand
+          setAuth(
+            localStorage.getItem('token') || '',
+            authService.getCurrentUser(),
+            currentTenant,
+            null
+          );
+        }
+        
+        setTimeout(() => navigate('/dashboard'), 1000);
       } else {
         toast.error(response.message || 'Erro ao cadastrar empresa');
       }
     } catch (error: any) {
-      console.error('Erro ao cadastrar empresa:', error);
-      toast.error(error.response?.data?.message || 'Erro ao cadastrar empresa');
+      console.error('❌ Erro ao cadastrar empresa:', error);
+      console.error('❌ Detalhes do erro:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      toast.error(error.response?.data?.message || error.message || 'Erro ao cadastrar empresa');
     } finally {
       setIsLoading(false);
     }
@@ -129,10 +198,22 @@ export const RegisterTenant: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
             <Building2 className="text-white" size={32} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Cadastrar Empresa</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isSsoMode ? 'Complete seu Cadastro' : 'Cadastrar Empresa'}
+          </h1>
           <p className="text-gray-600 mt-2">
-            Preencha os dados para começar a usar o LevverRH
+            {isSsoMode
+              ? 'Preencha os dados da sua empresa para finalizar'
+              : 'Preencha os dados para começar a usar o LevverRH'}
           </p>
+          {isSsoMode && user && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
+              <User size={16} className="text-blue-600" />
+              <span className="text-sm text-blue-900">
+                Logado como: <strong>{user.nome}</strong> ({user.email})
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Formulário */}
@@ -195,11 +276,12 @@ export const RegisterTenant: React.FC = () => {
             </div>
           </div>
 
-          {/* Divisor */}
-          <div className="border-t border-gray-200 my-6"></div>
+          {/* Divisor (apenas se não for SSO) */}
+          {!isSsoMode && <div className="border-t border-gray-200 my-6"></div>}
 
-          {/* Seção: Dados do Administrador */}
-          <div>
+          {/* Seção: Dados do Administrador (apenas se não for SSO) */}
+          {!isSsoMode && (
+            <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <User size={20} className="mr-2 text-blue-600" />
               Dados do Administrador
@@ -269,6 +351,7 @@ export const RegisterTenant: React.FC = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Botão de Cadastro */}
           <Button
@@ -277,24 +360,27 @@ export const RegisterTenant: React.FC = () => {
             size="lg"
             fullWidth
             isLoading={isLoading}
+            onClick={() => console.log('🔘 Botão clicado! Modo SSO:', isSsoMode)}
           >
             <Building2 size={20} />
-            Cadastrar Empresa
+            {isSsoMode ? 'Finalizar Cadastro' : 'Cadastrar Empresa'}
           </Button>
         </form>
 
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Já tem uma conta?{' '}
-            <Link
-              to="/login"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
-            >
-              Fazer login
-            </Link>
-          </p>
-        </div>
+        {/* Footer (apenas se não for SSO) */}
+        {!isSsoMode && (
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Já tem uma conta?{' '}
+              <Link
+                to="/login"
+                className="text-blue-600 hover:text-blue-700 font-semibold"
+              >
+                Fazer login
+              </Link>
+            </p>
+          </div>
+        )}
 
         <div className="mt-8 pt-6 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">

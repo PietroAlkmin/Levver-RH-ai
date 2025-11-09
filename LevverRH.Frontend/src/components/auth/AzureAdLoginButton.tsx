@@ -38,6 +38,10 @@ export const AzureAdLoginButton: React.FC = () => {
         name: loginResponse.account?.name,
       });
 
+      console.log('🔹 Enviando token para backend...', {
+        token: loginResponse.idToken.substring(0, 50) + '...',
+      });
+
       // 3️⃣ Enviar token para o backend validar
       const response = await authService.loginWithAzureAd({
         azureToken: loginResponse.idToken,
@@ -45,6 +49,7 @@ export const AzureAdLoginButton: React.FC = () => {
 
       if (response.success && response.data) {
         // 4️⃣ Salvar dados no Zustand + localStorage
+        authService.saveAuthData(response.data); // ✅ Salvar no formato do authService
         setAuth(
           response.data.token,
           response.data.user,
@@ -54,13 +59,27 @@ export const AzureAdLoginButton: React.FC = () => {
 
         toast.success(`Bem-vindo, ${response.data.user.nome}! 🎉`);
 
-        // 5️⃣ Redirecionar para dashboard
-        navigate('/dashboard');
+        // 5️⃣ Redirecionar baseado no status do tenant
+        if (response.data.tenant.status === 'PendenteSetup') {
+          // Tenant precisa completar cadastro
+          toast('Complete o cadastro da sua empresa para continuar.', {
+            icon: 'ℹ️',
+          });
+          navigate('/register-tenant');
+        } else {
+          // Tenant já está ativo, vai pro dashboard
+          navigate('/dashboard');
+        }
       } else {
         throw new Error(response.message || 'Erro ao autenticar com Azure AD');
       }
     } catch (error: any) {
       console.error('❌ Erro no login Azure AD:', error);
+      console.error('❌ Detalhes do erro:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
 
       // Mensagens de erro mais amigáveis
       let errorMessage = 'Erro ao fazer login com Microsoft';

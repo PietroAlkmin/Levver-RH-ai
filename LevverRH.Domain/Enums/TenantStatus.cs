@@ -10,6 +10,7 @@ namespace LevverRH.Domain.Enums
     {
         Ativo = 1,
         Inativo = 2,
-        Suspenso = 3
+        Suspenso = 3,
+        PendenteSetup = 4  // Aguardando completar dados após primeiro login SSO
     }
 }

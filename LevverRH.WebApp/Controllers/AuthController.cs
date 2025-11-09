@@ -1,6 +1,8 @@
 ﻿using LevverRH.Application.DTOs.Auth;
 using LevverRH.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LevverRH.WebApp.Controllers;
 
@@ -68,6 +70,42 @@ public class AuthController : ControllerBase
         if (!result.Success)
             return BadRequest(result);
 
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Completar setup de tenant criado via SSO (após primeiro login Azure AD)
+    /// </summary>
+    [HttpPost("complete-tenant-setup")]
+    [Authorize] // Requer autenticação
+    public async Task<IActionResult> CompleteTenantSetup([FromBody] CompleteTenantSetupDTO dto)
+    {
+        Console.WriteLine("🔹 Endpoint /complete-tenant-setup chamado!");
+        Console.WriteLine($"🔹 CNPJ: {dto.Cnpj}, Nome: {dto.NomeEmpresa}");
+        
+        // Pegar ID do usuário logado do JWT
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+            ?? User.FindFirst("sub")?.Value;
+
+        Console.WriteLine($"🔹 UserID do token: {userIdClaim}");
+        
+        if (string.IsNullOrEmpty(userIdClaim))
+        {
+            Console.WriteLine("❌ Token inválido - UserID não encontrado");
+            return Unauthorized("Token inválido");
+        }
+
+        var userId = Guid.Parse(userIdClaim);
+
+        var result = await _authService.CompleteTenantSetupAsync(userId, dto);
+
+        if (!result.Success)
+        {
+            Console.WriteLine($"❌ Erro no setup: {result.Message}");
+            return BadRequest(result);
+        }
+
+        Console.WriteLine("✅ Setup concluído com sucesso!");
         return Ok(result);
     }
 }

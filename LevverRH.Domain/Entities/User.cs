@@ -52,7 +52,9 @@ public class User
         if (tenant == null)
             throw new DomainException("Tenant não existe.");
 
-        if (tenant.Status != TenantStatus.Ativo)
+        // ✅ Permitir criação de usuário se Tenant está Ativo OU PendenteSetup
+        // (necessário para criar admin durante onboarding SSO)
+        if (tenant.Status == TenantStatus.Inativo || tenant.Status == TenantStatus.Suspenso)
             throw new DomainException("Tenant não está ativo.");
 
         return new User
@@ -95,7 +97,8 @@ public class User
         if (tenant == null)
             throw new DomainException("Tenant não existe.");
 
-        if (tenant.Status != TenantStatus.Ativo)
+        // ✅ Permitir criação de usuário se Tenant está Ativo OU PendenteSetup
+        if (tenant.Status == TenantStatus.Inativo || tenant.Status == TenantStatus.Suspenso)
             throw new DomainException("Tenant não está ativo.");
 
         return new User
