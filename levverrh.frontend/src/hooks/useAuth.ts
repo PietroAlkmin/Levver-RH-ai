@@ -6,8 +6,8 @@ import { LoginRequest, RegisterTenantRequest, RegisterRequest } from '../types/a
 import toast from 'react-hot-toast';
 
 /**
- * Custom Hook para gerenciar autenticação
- * Centraliza toda lógica de login/logout/registro
+ * Custom Hook para gerenciar autenticaï¿½ï¿½o
+ * Centraliza toda lï¿½gica de login/logout/registro
  */
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -23,24 +23,34 @@ export const useAuth = () => {
         setLoading(true);
         const response = await authService.login(credentials);
 
+        console.log('ðŸ” useAuth.login - Response:', response);
+
         if (response.success && response.data) {
+          console.log('âœ… useAuth.login - Setando auth com token:', response.data.token.substring(0, 50) + '...');
+          console.log('âœ… useAuth.login - User:', response.data.user);
+          console.log('âœ… useAuth.login - Tenant:', response.data.tenant);
+          
           setAuth(
-     response.data.token,
+            response.data.token,
             response.data.user,
-   response.data.tenant,
+            response.data.tenant,
             response.data.whiteLabel
-       );
+          );
           authService.saveAuthData(response.data);
-      toast.success(`Bem-vindo(a), ${response.data.user.nome}!`);
-   navigate('/dashboard');
+          
+          toast.success(`Bem-vindo(a), ${response.data.user.nome}!`);
+          
+          console.log('ðŸš€ useAuth.login - Navegando para /painel');
+          navigate('/painel');
           return { success: true };
         } else {
-       toast.error(response.message || 'Erro ao fazer login');
+          toast.error(response.message || 'Erro ao fazer login');
           return { success: false, message: response.message };
         }
       } catch (error: any) {
- const errorMessage = error.response?.data?.message || 'Erro ao fazer login';
-   toast.error(errorMessage);
+        console.error('âŒ useAuth.login - Erro:', error);
+        const errorMessage = error.response?.data?.message || 'Erro ao fazer login';
+        toast.error(errorMessage);
         return { success: false, message: errorMessage };
       } finally {
         setLoading(false);
@@ -67,7 +77,7 @@ export const useAuth = () => {
           );
      authService.saveAuthData(response.data);
           toast.success('Empresa cadastrada com sucesso!');
-          navigate('/dashboard');
+          navigate('/painel');
           return { success: true };
         } else {
 toast.error(response.message || 'Erro ao cadastrar empresa');
@@ -85,7 +95,7 @@ toast.error(response.message || 'Erro ao cadastrar empresa');
   );
 
   /**
-   * Registrar novo usuário
+   * Registrar novo usuï¿½rio
    */
   const registerUser = useCallback(
     async (data: RegisterRequest) => {
@@ -101,15 +111,15 @@ toast.error(response.message || 'Erro ao cadastrar empresa');
   response.data.whiteLabel
      );
           authService.saveAuthData(response.data);
-toast.success('Usuário cadastrado com sucesso!');
-       navigate('/dashboard');
+toast.success('UsuÃ¡rio cadastrado com sucesso!');
+       navigate('/painel');
           return { success: true };
         } else {
-          toast.error(response.message || 'Erro ao cadastrar usuário');
+          toast.error(response.message || 'Erro ao cadastrar usuï¿½rio');
           return { success: false, message: response.message };
         }
       } catch (error: any) {
-     const errorMessage = error.response?.data?.message || 'Erro ao cadastrar usuário';
+     const errorMessage = error.response?.data?.message || 'Erro ao cadastrar usuï¿½rio';
         toast.error(errorMessage);
    return { success: false, message: errorMessage };
       } finally {
@@ -130,7 +140,7 @@ toast.success('Usuário cadastrado com sucesso!');
   }, [clearAuth, navigate]);
 
   /**
-   * Verifica se usuário tem permissão
+   * Verifica se usuï¿½rio tem permissï¿½o
    */
   const hasRole = useCallback(
   (roles: string | string[]): boolean => {

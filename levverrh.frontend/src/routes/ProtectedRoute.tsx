@@ -9,19 +9,26 @@ interface ProtectedRouteProps {
 }
 
 /**
- * Componente para proteger rotas que exigem autenticação
+ * Componente para proteger rotas que exigem autenticaï¿½ï¿½o
  */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requiredRoles 
 }) => {
-  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const { isAuthenticated, user, isLoading, token } = useAuthStore();
+
+  // DEBUG: Log do estado de autenticaÃ§Ã£o
+  console.log('ğŸ”’ ProtectedRoute - isAuthenticated:', isAuthenticated);
+  console.log('ğŸ”’ ProtectedRoute - isLoading:', isLoading);
+  console.log('ğŸ”’ ProtectedRoute - token:', token ? 'exists' : 'null');
+  console.log('ğŸ”’ ProtectedRoute - user:', user);
 
   if (isLoading) {
-    return <Loading fullScreen text="Verificando autenticação..." />;
+    return <Loading fullScreen text="Verificando autenticaÃ§Ã£o..." />;
   }
 
-if (!isAuthenticated) {
+  if (!isAuthenticated || !token) {
+    console.log('âŒ ProtectedRoute - Redirecionando para /login');
     return <Navigate to="/login" replace />;
   }
 
@@ -35,7 +42,7 @@ if (!isAuthenticated) {
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">403</h1>
             <p className="text-xl text-gray-600">Acesso negado</p>
-            <p className="text-gray-500 mt-2">Você não tem permissão para acessar esta página.</p>
+            <p className="text-gray-500 mt-2">Vocï¿½ nï¿½o tem permissï¿½o para acessar esta pï¿½gina.</p>
           </div>
         </div>
       );

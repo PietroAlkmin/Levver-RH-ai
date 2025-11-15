@@ -137,7 +137,7 @@ export const RegisterTenant: React.FC = () => {
         );
 
         toast.success('Empresa cadastrada com sucesso! Bem-vindo ao LevverRH! 🎉');
-        navigate('/dashboard');
+        navigate('/painel');
       } else if (response.success && isSsoMode) {
         // Modo SSO: setup concluído, mas precisamos relogar para pegar tenant atualizado
         toast.success('Cadastro concluído! Redirecionando...');
@@ -162,7 +162,7 @@ export const RegisterTenant: React.FC = () => {
           );
         }
         
-        setTimeout(() => navigate('/dashboard'), 1000);
+        setTimeout(() => navigate('/painel'), 1000);
       } else {
         toast.error(response.message || 'Erro ao cadastrar empresa');
       }

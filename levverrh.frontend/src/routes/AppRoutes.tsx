@@ -7,7 +7,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { useAuthStore } from '../stores/authStore';
 
 // Lazy loading de páginas para performance
-const Dashboard = React.lazy(() => import('../pages/Dashboard/Dashboard'));
+const PainelDashboard = React.lazy(() => import('../features/painel/pages/PainelDashboard').then(module => ({ default: module.PainelDashboard })));
 
 /**
  * Configuração de rotas da aplicação
@@ -44,10 +44,10 @@ color: '#363636',
 
    <React.Suspense fallback={<div>Carregando...</div>}>
   <Routes>
-    {/* Rota raiz - redireciona para login ou dashboard */}
+    {/* Rota raiz - redireciona para login ou painel */}
           <Route
             path="/"
-   element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+   element={isAuthenticated ? <Navigate to="/painel" replace /> : <Navigate to="/login" replace />}
        />
 
           {/* Rotas públicas */}
@@ -57,10 +57,10 @@ color: '#363636',
 
       {/* Rotas protegidas */}
        <Route
- path="/dashboard"
+ path="/painel"
             element={
               <ProtectedRoute>
-           <Dashboard />
+           <PainelDashboard />
        </ProtectedRoute>
    }
   />

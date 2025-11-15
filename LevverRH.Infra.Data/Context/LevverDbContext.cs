@@ -15,6 +15,7 @@ public class LevverDbContext : DbContext
     public DbSet<WhiteLabel> WhiteLabels { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<ProductCatalog> ProductCatalogs { get; set; }
+    public DbSet<TenantProduct> TenantProducts { get; set; }
     public DbSet<TenantSubscription> TenantSubscriptions { get; set; }
     public DbSet<IntegrationCredentials> IntegrationCredentials { get; set; }
 

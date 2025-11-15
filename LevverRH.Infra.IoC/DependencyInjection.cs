@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IWhiteLabelRepository, WhiteLabelRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IProductCatalogRepository, ProductCatalogRepository>();
+        services.AddScoped<ITenantProductRepository, TenantProductRepository>();
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<IIntegrationCredentialsRepository, IntegrationCredentialsRepository>();
 
@@ -50,6 +51,7 @@ public static class DependencyInjection
 
         // Application Services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IProductService, ProductService>();
 
         return services;
     }

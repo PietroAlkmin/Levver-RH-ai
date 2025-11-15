@@ -67,8 +67,8 @@ export const AzureAdLoginButton: React.FC = () => {
           });
           navigate('/register-tenant');
         } else {
-          // Tenant já está ativo, vai pro dashboard
-          navigate('/dashboard');
+          // Tenant já está ativo, vai pro painel
+          navigate('/painel');
         }
       } else {
         throw new Error(response.message || 'Erro ao autenticar com Azure AD');
