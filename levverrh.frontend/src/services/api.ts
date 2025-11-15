@@ -43,13 +43,25 @@ apiClient.interceptors.response.use(
 
     // Unauthorized - Token expirado ou inválido
     if (error.response?.status === 401) {
-      console.log('🚨 401 Unauthorized - Redirecionando para /login');
+      console.log('🚨 401 Unauthorized detectado');
       console.log('🚨 401 - URL que causou:', error.config?.url);
       console.log('🚨 401 - Token atual:', localStorage.getItem('token')?.substring(0, 50) + '...');
       
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // ⚠️ IMPORTANTE: Só redirecionar se for erro de autenticação
+      // Endpoints de recursos (como /products) podem retornar 401 se não tiver acesso
+      const isAuthEndpoint = error.config?.url?.includes('/auth');
+      
+      if (isAuthEndpoint) {
+        console.log('🚨 Erro 401 em endpoint de auth - Redirecionando para /login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('tenant');
+        localStorage.removeItem('auth-storage');
+        window.location.href = '/login';
+      } else {
+        console.log('⚠️ Erro 401 em endpoint de recurso - NÃO redirecionando (deixar componente tratar)');
+        // Deixa o erro passar para o componente tratar
+      }
     }
 
     // Forbidden - Sem permissão

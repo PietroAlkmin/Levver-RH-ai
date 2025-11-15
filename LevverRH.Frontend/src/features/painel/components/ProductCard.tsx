@@ -1,15 +1,15 @@
 import React from 'react';
-import { TenantProduct } from '../types/product.types';
+import { Product, TenantProduct } from '../types/product.types';
 import './ProductCard.css';
 
 interface ProductCardProps {
-  product: TenantProduct;
+  product: Product | TenantProduct;
   onClick?: () => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
   const isLaunched = product.lancado;
-  const hasAccess = product.acessoAtivo;
+  const hasAccess = 'acessoAtivo' in product ? product.acessoAtivo : true; // Se for Product, assume acesso total
 
   const handleClick = () => {
     if (isLaunched && hasAccess && onClick) {

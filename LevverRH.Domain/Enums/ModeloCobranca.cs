@@ -8,9 +8,11 @@ namespace LevverRH.Domain.Enums
 {
     public enum ModeloCobranca
     {
-        Fixo = 1,
-        Usage = 2,
-        OneTime = 3,
-        Hibrido = 4
+        Gratuito = 0,
+        Mensal = 1,
+        Fixo = 2,
+        Usage = 3,
+        OneTime = 4,
+        Hibrido = 5
     }
 }

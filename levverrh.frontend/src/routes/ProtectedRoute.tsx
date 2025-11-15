@@ -15,13 +15,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requiredRoles 
 }) => {
-  const { isAuthenticated, user, isLoading, token } = useAuthStore();
+  const { isAuthenticated, user, isLoading, token, _hasHydrated } = useAuthStore();
 
   // DEBUG: Log do estado de autenticação
+  console.log('🔒 ProtectedRoute - _hasHydrated:', _hasHydrated);
   console.log('🔒 ProtectedRoute - isAuthenticated:', isAuthenticated);
   console.log('🔒 ProtectedRoute - isLoading:', isLoading);
   console.log('🔒 ProtectedRoute - token:', token ? 'exists' : 'null');
   console.log('🔒 ProtectedRoute - user:', user);
+
+  // Aguardar hidratação do Zustand
+  if (!_hasHydrated) {
+    console.log('⏳ ProtectedRoute - Aguardando hidratação do Zustand...');
+    return <Loading fullScreen text="Carregando..." />;
+  }
 
   if (isLoading) {
     return <Loading fullScreen text="Verificando autenticação..." />;

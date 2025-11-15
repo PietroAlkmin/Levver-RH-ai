@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { productService } from '../services/productService';
-import { TenantProduct } from '../types/product.types';
+import { Product } from '../types/product.types';
 import './PainelDashboard.css';
 
 export const PainelDashboard: React.FC = () => {
-  const [products, setProducts] = useState<TenantProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('📦 PainelDashboard - Componente montado');
     loadProducts();
   }, []);
 
@@ -20,7 +21,7 @@ export const PainelDashboard: React.FC = () => {
       console.log('📦 PainelDashboard - Iniciando carregamento de produtos...');
       setLoading(true);
       setError(null);
-      const data = await productService.getMyProducts();
+      const data = await productService.getAllProducts();
       console.log('✅ PainelDashboard - Produtos carregados:', data);
       setProducts(data);
     } catch (err) {
@@ -31,7 +32,7 @@ export const PainelDashboard: React.FC = () => {
     }
   };
 
-  const handleProductClick = (product: TenantProduct) => {
+  const handleProductClick = (product: Product) => {
     if (product.rotaBase) {
       navigate(product.rotaBase);
     }
@@ -80,7 +81,7 @@ export const PainelDashboard: React.FC = () => {
         <div className="products-grid">
           {products.map((product) => (
             <ProductCard
-              key={product.productId}
+              key={product.id}
               product={product}
               onClick={() => handleProductClick(product)}
             />

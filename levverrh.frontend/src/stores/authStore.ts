@@ -10,17 +10,19 @@ interface AuthState {
   whiteLabel: WhiteLabelInfo | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
 
   // Actions
   setAuth: (token: string, user: UserInfo, tenant: TenantInfo, whiteLabel?: WhiteLabelInfo | null) => void;
   clearAuth: () => void;
   setLoading: (isLoading: boolean) => void;
   updateUser: (user: Partial<UserInfo>) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 /**
- * Auth Store - Gerenciamento de estado de autenticação
- * Usa Zustand com persistência no localStorage
+ * Auth Store - Gerenciamento de estado de autenticaï¿½ï¿½o
+ * Usa Zustand com persistï¿½ncia no localStorage
  */
 export const useAuthStore = create<AuthState>()(
   devtools(
@@ -33,44 +35,50 @@ export const useAuthStore = create<AuthState>()(
         whiteLabel: null,
         isAuthenticated: false,
         isLoading: false,
+        _hasHydrated: false,
 
         // Actions
         setAuth: (token, user, tenant, whiteLabel = null) =>
           set({
             token,
-      user,
+            user,
             tenant,
-  whiteLabel,
-     isAuthenticated: true,
+            whiteLabel,
+            isAuthenticated: true,
             isLoading: false,
-      }),
-
-    clearAuth: () =>
-          set({
-          token: null,
-            user: null,
-    tenant: null,
-whiteLabel: null,
-            isAuthenticated: false,
-    isLoading: false,
           }),
 
-      setLoading: isLoading => set({ isLoading }),
+        clearAuth: () =>
+          set({
+            token: null,
+            user: null,
+            tenant: null,
+            whiteLabel: null,
+            isAuthenticated: false,
+            isLoading: false,
+          }),
+
+        setLoading: isLoading => set({ isLoading }),
 
         updateUser: user =>
-       set(state => ({
+          set(state => ({
             user: state.user ? { ...state.user, ...user } : null,
           })),
-}),
+
+        setHasHydrated: hasHydrated => set({ _hasHydrated: hasHydrated }),
+      }),
       {
         name: 'auth-storage',
-      partialize: state => ({
+        partialize: state => ({
           token: state.token,
-  user: state.user,
+          user: state.user,
           tenant: state.tenant,
-    whiteLabel: state.whiteLabel,
+          whiteLabel: state.whiteLabel,
           isAuthenticated: state.isAuthenticated,
         }),
+        onRehydrateStorage: () => (state) => {
+          state?.setHasHydrated(true);
+        },
       }
     ),
     { name: 'AuthStore' }

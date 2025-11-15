@@ -13,7 +13,10 @@ const PainelDashboard = React.lazy(() => import('../features/painel/pages/Painel
  * Configuração de rotas da aplicação
  */
 export const AppRoutes: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
+
+  console.log('🛣️ AppRoutes - _hasHydrated:', _hasHydrated);
+  console.log('🛣️ AppRoutes - isAuthenticated:', isAuthenticated);
 
   return (
     <BrowserRouter>
@@ -47,8 +50,18 @@ color: '#363636',
     {/* Rota raiz - redireciona para login ou painel */}
           <Route
             path="/"
-   element={isAuthenticated ? <Navigate to="/painel" replace /> : <Navigate to="/login" replace />}
-       />
+            element={
+              !_hasHydrated ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                  Carregando...
+                </div>
+              ) : isAuthenticated ? (
+                <Navigate to="/painel" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
           {/* Rotas públicas */}
           <Route path="/login" element={<Login />} />
