@@ -1,11 +1,15 @@
 ﻿using FluentValidation;
 using LevverRH.Application.Mappings;
 using LevverRH.Application.Services.Implementations;
+using LevverRH.Application.Services.Implementations.Talents;
 using LevverRH.Application.Services.Interfaces;
+using LevverRH.Application.Services.Interfaces.Talents;
 using LevverRH.Application.Validators;
 using LevverRH.Domain.Interfaces;
+using LevverRH.Domain.Interfaces.Talents;
 using LevverRH.Infra.Data.Context;
 using LevverRH.Infra.Data.Repositories;
+using LevverRH.Infra.Data.Repositories.Talents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +47,11 @@ public static class DependencyInjection
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<IIntegrationCredentialsRepository, IntegrationCredentialsRepository>();
 
+        // Talents Repositories
+        services.AddScoped<IJobRepository, JobRepository>();
+        services.AddScoped<ICandidateRepository, CandidateRepository>();
+        services.AddScoped<IApplicationRepository, ApplicationRepository>();
+
         // AutoMapper
         services.AddAutoMapper(typeof(AuthMappingProfile));
 
@@ -52,6 +61,12 @@ public static class DependencyInjection
         // Application Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
+
+        // Talents Services
+        services.AddScoped<IJobService, JobService>();
+        services.AddScoped<ICandidateService, CandidateService>();
+        services.AddScoped<IApplicationService, ApplicationService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }
