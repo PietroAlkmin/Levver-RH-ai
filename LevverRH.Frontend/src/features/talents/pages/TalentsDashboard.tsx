@@ -8,6 +8,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
 import { talentsService } from '../services/talentsService';
 import { DashboardStatsDTO, JobDTO } from '../types/talents.types';
 
@@ -44,26 +45,26 @@ const TalentsDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando dashboard...</p>
+      <MainLayout currentProductName="Levver Talents">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando dashboard...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <MainLayout currentProductName="Levver Talents">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            🎯 Levver Talents
+             Levver Talents
           </h1>
-          <p className="text-gray-600 mt-1">
-            Multi-Sourcing de Talentos - Dashboard
-          </p>
         </div>
         <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
           + Nova Vaga
@@ -224,6 +225,7 @@ const TalentsDashboard: React.FC = () => {
         </div>
       </div>
     </div>
+    </MainLayout>
   );
 };
 

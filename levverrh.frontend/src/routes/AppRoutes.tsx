@@ -8,6 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 
 // Lazy loading de páginas para performance
 const PainelDashboard = React.lazy(() => import('../features/painel/pages/PainelDashboard').then(module => ({ default: module.PainelDashboard })));
+const TalentsDashboard = React.lazy(() => import('../features/talents/pages/TalentsDashboard').then(module => ({ default: module.default })));
 
 /**
  * Configuração de rotas da aplicação
@@ -77,6 +78,16 @@ color: '#363636',
        </ProtectedRoute>
    }
   />
+
+      {/* Levver Talents */}
+      <Route
+        path="/talents"
+        element={
+          <ProtectedRoute>
+            <TalentsDashboard />
+          </ProtectedRoute>
+        }
+      />
 
     {/* 404 */}
   <Route path="*" element={<div>404 - Página não encontrada</div>} />
