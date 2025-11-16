@@ -24,6 +24,26 @@ public class ProductCatalogConfiguration : IEntityTypeConfiguration<ProductCatal
             .IsRequired()
             .HasMaxLength(100);
 
+        builder.Property(p => p.Icone)
+            .HasMaxLength(200)
+            .HasColumnName("icone");
+
+        builder.Property(p => p.CorPrimaria)
+            .HasMaxLength(20)
+            .HasColumnName("cor_primaria");
+
+        builder.Property(p => p.RotaBase)
+            .HasMaxLength(100)
+            .HasColumnName("rota_base");
+
+        builder.Property(p => p.OrdemExibicao)
+            .IsRequired()
+            .HasColumnName("ordem_exibicao");
+
+        builder.Property(p => p.Lancado)
+            .IsRequired()
+            .HasColumnName("lancado");
+
         builder.Property(p => p.ModeloCobranca)
             .IsRequired()
             .HasConversion<string>()

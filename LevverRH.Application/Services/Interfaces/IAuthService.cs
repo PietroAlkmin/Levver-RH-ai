@@ -18,4 +18,9 @@ public interface IAuthService
     Task<ResultDTO<LoginResponseDTO>> RegisterUserAsync(RegisterRequestDTO dto);
     
     Task<ResultDTO<LoginResponseDTO>> LoginWithAzureAdAsync(AzureAdLoginRequestDTO dto);
+    
+    /// <summary>
+    /// Completar setup de tenant criado via SSO (após primeiro login)
+    /// </summary>
+    Task<ResultDTO<string>> CompleteTenantSetupAsync(Guid userId, CompleteTenantSetupDTO dto);
 }

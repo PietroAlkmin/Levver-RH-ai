@@ -20,4 +20,9 @@ public class TenantRepository : Repository<Tenant>, ITenantRepository
     {
         return await _dbSet.FirstOrDefaultAsync(t => t.Email == email);
     }
+
+    public async Task<Tenant?> GetByDominioAsync(string dominio)
+    {
+        return await _dbSet.FirstOrDefaultAsync(t => t.Dominio == dominio.ToLowerInvariant());
+    }
 }

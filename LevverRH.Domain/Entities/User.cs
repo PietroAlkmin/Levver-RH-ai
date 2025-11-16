@@ -34,11 +34,11 @@ public class User
     // Factory Method para Azure AD
     public static User CriarComAzureAd(
         Guid tenantId,
-        string azureAdId,
         string email,
         string nome,
         UserRole role,
-        Tenant tenant)
+        Tenant tenant,
+        string? azureAdId = null)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new DomainException("Email é obrigatório.");
@@ -49,13 +49,12 @@ public class User
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("Nome é obrigatório.");
 
-        if (string.IsNullOrWhiteSpace(azureAdId))
-            throw new DomainException("Azure AD ID é obrigatório para autenticação Azure AD.");
-
         if (tenant == null)
             throw new DomainException("Tenant não existe.");
 
-        if (tenant.Status != TenantStatus.Ativo)
+        // ✅ Permitir criação de usuário se Tenant está Ativo OU PendenteSetup
+        // (necessário para criar admin durante onboarding SSO)
+        if (tenant.Status == TenantStatus.Inativo || tenant.Status == TenantStatus.Suspenso)
             throw new DomainException("Tenant não está ativo.");
 
         return new User
@@ -98,7 +97,8 @@ public class User
         if (tenant == null)
             throw new DomainException("Tenant não existe.");
 
-        if (tenant.Status != TenantStatus.Ativo)
+        // ✅ Permitir criação de usuário se Tenant está Ativo OU PendenteSetup
+        if (tenant.Status == TenantStatus.Inativo || tenant.Status == TenantStatus.Suspenso)
             throw new DomainException("Tenant não está ativo.");
 
         return new User
@@ -149,6 +149,14 @@ public class User
     public void AtualizarFoto(string? url)
     {
         FotoUrl = url;
+    }
+
+    public void AtualizarNome(string novoNome)
+    {
+        if (string.IsNullOrWhiteSpace(novoNome))
+            throw new DomainException("Nome é obrigatório.");
+
+        Nome = novoNome;
     }
 
     public void ValidarAcesso(Guid tenantId)
