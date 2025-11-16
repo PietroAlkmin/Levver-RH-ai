@@ -1,138 +1,80 @@
-.painel-container {
-  max-width: 1200px;
+.painel-dashboard {
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 24px;
 }
 
-.painel-header {
-  margin-bottom: 40px;
+.dashboard-welcome {
+  margin-bottom: 3rem;
 }
 
-.painel-header h1 {
-  font-size: 32px;
+.dashboard-welcome h1 {
+  font-size: 2.5rem;
+  color: var(--color-dark);
+  margin-bottom: 0.5rem;
   font-weight: 700;
-  color: #333;
-  margin: 0 0 8px 0;
 }
 
-.subtitle {
-  font-size: 16px;
+.dashboard-subtitle {
+  font-size: 1.1rem;
   color: #666;
-  margin: 0;
 }
 
-.products-grid {
+/* Dashboard Widgets Grid */
+.dashboard-widgets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
 
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-state p {
-  color: #666;
-  font-size: 16px;
-}
-
-/* Error State */
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-}
-
-.error-message {
-  color: #f44336;
-  font-size: 16px;
+/* Placeholder para widgets futuros */
+.widget-placeholder {
+  background-color: var(--color-light);
+  border: 2px dashed var(--color-gray);
+  border-radius: 16px;
+  padding: 3rem 2rem;
   text-align: center;
+  transition: all 0.3s ease;
 }
 
-.retry-button {
-  padding: 12px 24px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.widget-placeholder:hover {
+  border-color: var(--color-lavender);
+  background-color: rgba(212, 194, 245, 0.05);
 }
 
-.retry-button:hover {
-  background-color: #2980b9;
-}
-
-/* Empty State */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 64px;
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
   opacity: 0.5;
 }
 
-.empty-state h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
+.widget-placeholder h3 {
+  color: var(--color-dark);
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
-.empty-state p {
-  font-size: 16px;
+.widget-placeholder p {
   color: #666;
-  margin: 0;
+  font-size: 0.95rem;
 }
 
-/* Responsividade */
+/* Responsivo */
 @media (max-width: 768px) {
-  .painel-container {
-    padding: 24px 16px;
+  .dashboard-welcome h1 {
+    font-size: 2rem;
   }
 
-  .painel-header h1 {
-    font-size: 24px;
+  .dashboard-subtitle {
+    font-size: 1rem;
   }
 
-  .subtitle {
-    font-size: 14px;
-  }
-
-  .products-grid {
+  .dashboard-widgets {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 1rem;
+  }
+
+  .widget-placeholder {
+    padding: 2rem 1rem;
   }
 }
