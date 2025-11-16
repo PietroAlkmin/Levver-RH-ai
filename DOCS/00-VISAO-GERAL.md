@@ -13,14 +13,13 @@ A plataforma funciona como um **catálogo de produtos**, onde:
 - Produtos são isolados mas compartilham a mesma base de autenticação
 - Cobrança por produto contratado (modelo modular)
 
-### **Produtos Disponíveis (Roadmap)**
+### **Produtos Disponíveis**
 
-1. **Levver MST** - Gestão de Multi-Sourcing de Talentos
-2. **Levver Recrutamento** - Sistema de recrutamento e seleção
-3. **Levver Onboarding** - Integração de novos colaboradores
-4. **Levver Ponto** - Controle de ponto eletrônico
-5. **Levver Performance** - Avaliação de desempenho
-6. **Levver Treinamento** - Gestão de capacitação
+1. **✅ Levver Talents** - Sistema completo de recrutamento e seleção (LANÇADO)
+2. **Levver Onboarding** - Integração de novos colaboradores
+3. **Levver Ponto** - Controle de ponto eletrônico
+4. **Levver Performance** - Avaliação de desempenho
+5. **Levver Treinamento** - Gestão de capacitação
 
 ## 🏛️ Arquitetura Técnica
 
@@ -288,6 +287,12 @@ Levver-RH-ai/
 - [x] Protected Routes
 - [x] Migrations para banco de dados
 - [x] API de Produtos (/api/products)
+- [x] **Produto Levver Talents** (primeiro produto lançado)
+  - [x] Backend completo (6 entidades, 4 enums, controllers, services)
+  - [x] Frontend Dashboard com métricas
+  - [x] Integração sidebar com navegação
+  - [x] API endpoints para vagas, candidaturas, entrevistas
+  - [x] Dashboard com estatísticas em tempo real
 
 ### 🚧 **Em Desenvolvimento**
 - [ ] Correção de bugs de redirect após login
@@ -311,5 +316,5 @@ Levver-RH-ai/
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025
+**Última Atualização**: 16 de Novembro de 2025
 **Versão**: 1.0.0-alpha

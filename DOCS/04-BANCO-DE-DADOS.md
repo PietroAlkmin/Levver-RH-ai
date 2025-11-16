@@ -317,25 +317,70 @@ public async Task CreateTenantSchemaAsync(Guid tenantId)
     // 1. Criar schema
     await _context.Database.ExecuteSqlRawAsync($"CREATE SCHEMA [{schemaName}]");
     
-    // 2. Criar tabelas do produto MST
+    // 2. Criar tabelas do Levver Talents
     await _context.Database.ExecuteSqlRawAsync($@"
-        CREATE TABLE [{schemaName}].candidatos (
-            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-            nome NVARCHAR(150) NOT NULL,
-            email NVARCHAR(100) NOT NULL,
-            telefone NVARCHAR(20),
-            linkedin_url NVARCHAR(300),
-            curriculo_url NVARCHAR(500),
-            status NVARCHAR(30) NOT NULL,
-            data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
-        );
-        
+        -- Vagas
         CREATE TABLE [{schemaName}].vagas (
             id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
             titulo NVARCHAR(200) NOT NULL,
             descricao NVARCHAR(MAX),
             departamento NVARCHAR(100),
-            status NVARCHAR(30) NOT NULL,
+            status NVARCHAR(30) NOT NULL DEFAULT 'Aberta',
+            data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+        );
+        
+        -- Candidaturas
+        CREATE TABLE [{schemaName}].candidaturas (
+            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+            vaga_id UNIQUEIDENTIFIER NOT NULL,
+            nome_candidato NVARCHAR(150) NOT NULL,
+            email NVARCHAR(100) NOT NULL,
+            status NVARCHAR(50) NOT NULL DEFAULT 'Nova',
+            data_candidatura DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+            CONSTRAINT FK_candidatura_vaga FOREIGN KEY (vaga_id) 
+                REFERENCES [{schemaName}].vagas(id) ON DELETE CASCADE
+        );
+        
+        -- Entrevistas
+        CREATE TABLE [{schemaName}].entrevistas (
+            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+            candidatura_id UNIQUEIDENTIFIER NOT NULL,
+            tipo NVARCHAR(30) NOT NULL,
+            data_hora DATETIME2 NOT NULL,
+            status NVARCHAR(30) NOT NULL DEFAULT 'Agendada',
+            data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+            CONSTRAINT FK_entrevista_candidatura FOREIGN KEY (candidatura_id) 
+                REFERENCES [{schemaName}].candidaturas(id) ON DELETE CASCADE
+        );
+        
+        -- Avaliações
+        CREATE TABLE [{schemaName}].avaliacoes (
+            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+            candidatura_id UNIQUEIDENTIFIER NOT NULL,
+            avaliador NVARCHAR(150) NOT NULL,
+            nota DECIMAL(3,2),
+            comentarios NVARCHAR(MAX),
+            data_avaliacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+            CONSTRAINT FK_avaliacao_candidatura FOREIGN KEY (candidatura_id) 
+                REFERENCES [{schemaName}].candidaturas(id) ON DELETE CASCADE
+        );
+        
+        -- Etapas
+        CREATE TABLE [{schemaName}].etapas (
+            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+            vaga_id UNIQUEIDENTIFIER NOT NULL,
+            nome NVARCHAR(100) NOT NULL,
+            ordem INT NOT NULL,
+            data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+            CONSTRAINT FK_etapa_vaga FOREIGN KEY (vaga_id) 
+                REFERENCES [{schemaName}].vagas(id) ON DELETE CASCADE
+        );
+        
+        -- Habilidades
+        CREATE TABLE [{schemaName}].habilidades (
+            id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+            nome NVARCHAR(100) NOT NULL,
+            categoria NVARCHAR(50),
             data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
         );
     ");
@@ -351,18 +396,9 @@ public async Task CreateTenantSchemaAsync(Guid tenantId)
 
 ```sql
 -- Schema: tenant_12345678-1234-1234-1234-123456789abc
+-- Tabelas do Levver Talents (Recrutamento e Seleção)
 
-CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.candidatos (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    nome NVARCHAR(150) NOT NULL,
-    email NVARCHAR(100) NOT NULL,
-    telefone NVARCHAR(20),
-    linkedin_url NVARCHAR(300),
-    curriculo_url NVARCHAR(500),
-    status NVARCHAR(30) NOT NULL,  -- Novo, EmAnalise, Aprovado, Reprovado
-    data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
-);
-
+-- Vagas de emprego
 CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.vagas (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     titulo NVARCHAR(200) NOT NULL,
@@ -371,23 +407,112 @@ CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.vagas (
     localizacao NVARCHAR(100),
     salario_min DECIMAL(10,2),
     salario_max DECIMAL(10,2),
-    status NVARCHAR(30) NOT NULL,  -- Aberta, Fechada, Pausada
+    tipo_contrato NVARCHAR(50),  -- CLT, PJ, Estágio, Temporário
+    status NVARCHAR(30) NOT NULL DEFAULT 'Aberta',  -- Aberta, Fechada, Suspensa, Cancelada
+    data_abertura DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    data_fechamento DATETIME2,
+    data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    data_atualizacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+);
+
+-- Candidaturas
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.candidaturas (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    vaga_id UNIQUEIDENTIFIER NOT NULL,
+    nome_candidato NVARCHAR(150) NOT NULL,
+    email NVARCHAR(100) NOT NULL,
+    telefone NVARCHAR(20),
+    linkedin_url NVARCHAR(300),
+    curriculo_url NVARCHAR(500),
+    carta_apresentacao NVARCHAR(MAX),
+    status NVARCHAR(50) NOT NULL DEFAULT 'Nova',  -- Nova, EmAnalise, Entrevista, Aprovada, Reprovada
+    fonte NVARCHAR(100),  -- LinkedIn, Site, Indicação, etc.
+    data_candidatura DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    data_atualizacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    
+    CONSTRAINT FK_candidatura_vaga FOREIGN KEY (vaga_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.vagas(id) ON DELETE CASCADE
+);
+
+-- Entrevistas
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.entrevistas (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    candidatura_id UNIQUEIDENTIFIER NOT NULL,
+    tipo NVARCHAR(30) NOT NULL,  -- Presencial, Online, Telefone
+    data_hora DATETIME2 NOT NULL,
+    duracao_minutos INT DEFAULT 60,
+    local_ou_link NVARCHAR(500),
+    entrevistador NVARCHAR(150),
+    observacoes NVARCHAR(MAX),
+    status NVARCHAR(30) NOT NULL DEFAULT 'Agendada',  -- Agendada, Realizada, Cancelada, Remarcada
+    data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    data_atualizacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    
+    CONSTRAINT FK_entrevista_candidatura FOREIGN KEY (candidatura_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.candidaturas(id) ON DELETE CASCADE
+);
+
+-- Avaliações de candidatos
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.avaliacoes (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    candidatura_id UNIQUEIDENTIFIER NOT NULL,
+    entrevista_id UNIQUEIDENTIFIER,
+    avaliador NVARCHAR(150) NOT NULL,
+    nota DECIMAL(3,2),  -- 0.00 a 10.00
+    comentarios NVARCHAR(MAX),
+    pontos_fortes NVARCHAR(MAX),
+    pontos_fracos NVARCHAR(MAX),
+    recomendacao NVARCHAR(50),  -- Aprovar, Reprovar, Reavaliar
+    data_avaliacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    
+    CONSTRAINT FK_avaliacao_candidatura FOREIGN KEY (candidatura_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.candidaturas(id) ON DELETE CASCADE,
+    CONSTRAINT FK_avaliacao_entrevista FOREIGN KEY (entrevista_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.entrevistas(id)
+);
+
+-- Etapas do processo seletivo (pipeline customizável)
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.etapas (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    vaga_id UNIQUEIDENTIFIER NOT NULL,
+    nome NVARCHAR(100) NOT NULL,  -- Triagem, Entrevista RH, Entrevista Técnica, etc.
+    descricao NVARCHAR(500),
+    ordem INT NOT NULL,
+    obrigatoria BIT NOT NULL DEFAULT 1,
+    data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    
+    CONSTRAINT FK_etapa_vaga FOREIGN KEY (vaga_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.vagas(id) ON DELETE CASCADE
+);
+
+-- Habilidades/competências
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.habilidades (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    nome NVARCHAR(100) NOT NULL,
+    categoria NVARCHAR(50),  -- Técnica, Comportamental, Idioma
+    nivel NVARCHAR(30),  -- Básico, Intermediário, Avançado
     data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE()
 );
 
-CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.processos_seletivos (
-    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+-- Relacionamento N:N entre Vagas e Habilidades
+CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.vaga_habilidades (
     vaga_id UNIQUEIDENTIFIER NOT NULL,
-    candidato_id UNIQUEIDENTIFIER NOT NULL,
-    etapa_atual NVARCHAR(50),
-    status NVARCHAR(30),
-    data_criacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    habilidade_id UNIQUEIDENTIFIER NOT NULL,
+    obrigatoria BIT NOT NULL DEFAULT 0,
     
-    CONSTRAINT FK_processo_vaga FOREIGN KEY (vaga_id) 
-        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.vagas(id),
-    CONSTRAINT FK_processo_candidato FOREIGN KEY (candidato_id) 
-        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.candidatos(id)
+    PRIMARY KEY (vaga_id, habilidade_id),
+    CONSTRAINT FK_vaga_habilidade_vaga FOREIGN KEY (vaga_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.vagas(id) ON DELETE CASCADE,
+    CONSTRAINT FK_vaga_habilidade_habilidade FOREIGN KEY (habilidade_id) 
+        REFERENCES tenant_12345678-1234-1234-1234-123456789abc.habilidades(id) ON DELETE CASCADE
 );
+
+-- Índices para performance
+CREATE INDEX IX_candidaturas_vaga_id ON tenant_12345678-1234-1234-1234-123456789abc.candidaturas(vaga_id);
+CREATE INDEX IX_candidaturas_status ON tenant_12345678-1234-1234-1234-123456789abc.candidaturas(status);
+CREATE INDEX IX_entrevistas_candidatura_id ON tenant_12345678-1234-1234-1234-123456789abc.entrevistas(candidatura_id);
+CREATE INDEX IX_entrevistas_data_hora ON tenant_12345678-1234-1234-1234-123456789abc.entrevistas(data_hora);
+CREATE INDEX IX_avaliacoes_candidatura_id ON tenant_12345678-1234-1234-1234-123456789abc.avaliacoes(candidatura_id);
 ```
 
 ---
@@ -580,4 +705,4 @@ WITH COMPRESSION;
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025
+**Última Atualização**: 16 de Novembro de 2025

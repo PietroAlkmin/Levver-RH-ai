@@ -27,14 +27,28 @@ LevverRH.Domain/
 │   ├── TenantSubscription.cs   # Assinatura ativa
 │   ├── WhiteLabel.cs           # Personalização visual
 │   ├── IntegrationCredentials.cs  # Credenciais de APIs
-│   └── AuditLog.cs             # Log de auditoria
+│   ├── AuditLog.cs             # Log de auditoria
+│   │
+│   └── Talents/                # 🎯 Levver Talents (Recrutamento)
+│       ├── Vaga.cs             # Vagas de emprego
+│       ├── Candidatura.cs      # Candidaturas
+│       ├── Entrevista.cs       # Entrevistas agendadas
+│       ├── Avaliacao.cs        # Avaliações de candidatos
+│       ├── Etapa.cs            # Pipeline de recrutamento
+│       └── Habilidade.cs       # Skills e competências
 │
 ├── Enums/                      # Enumerações
 │   ├── AuthType.cs             # EmailSenha, AzureAd
 │   ├── UserRole.cs             # Admin, Manager, User
 │   ├── TenantStatus.cs         # Ativo, Inativo, Suspenso
 │   ├── SubscriptionStatus.cs  # Ativa, Cancelada, Suspensa
-│   └── ModeloCobranca.cs       # Mensal, Anual, Unico, Uso
+│   ├── ModeloCobranca.cs       # Mensal, Anual, Unico, Uso
+│   │
+│   └── Talents/                # Enums do Levver Talents
+│       ├── StatusVaga.cs       # Aberta, Fechada, Suspensa, Cancelada
+│       ├── StatusCandidatura.cs  # Nova, EmAnalise, Entrevista, Aprovada, etc
+│       ├── TipoEntrevista.cs   # Presencial, Online, Telefone
+│       └── StatusEntrevista.cs # Agendada, Realizada, Cancelada
 │
 ├── Interfaces/                 # Contratos de repositórios
 │   ├── IRepository.cs          # Repository genérico
@@ -603,4 +617,4 @@ CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.vagas (...);
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025
+**Última Atualização**: 16 de Novembro de 2025

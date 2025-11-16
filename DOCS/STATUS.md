@@ -286,16 +286,17 @@ az staticwebapp deploy \
 ## 📊 Status do Projeto
 
 **Versão Atual**: 1.0.0-alpha  
-**Última Atualização**: 14 de Novembro de 2025  
+**Última Atualização**: 16 de Novembro de 2025  
 **Status**: 🟡 Em Desenvolvimento Ativo  
 
 ### **Progresso**
 
 ```
-Backend:     ████████████████████░░ 90%
-Frontend:    ████████████████░░░░░░ 80%
+Backend:     ████████████████████░░ 95% ✅
+Frontend:    █████████████████░░░░░ 85%
 Database:    ████████████████████░░ 95%
 Docs:        ██████████████████████ 100% ✅
+Talents:     ████████████████████░░ 90% 🚀
 Testes:      ████░░░░░░░░░░░░░░░░░░ 20%
 ```
 
@@ -313,5 +314,5 @@ Se encontrar algum erro ou tiver sugestões de melhoria, abra uma issue no GitHu
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025  
+**Última Atualização**: 16 de Novembro de 2025  
 **Mantido por**: Pietro Alkmin

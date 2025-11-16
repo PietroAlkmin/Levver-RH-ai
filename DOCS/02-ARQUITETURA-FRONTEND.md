@@ -31,8 +31,17 @@ LevverRH.Frontend/
 │   │   │   │   └── product.types.ts
 │   │   │   └── index.ts       # Exports públicos
 │   │   │
+│   │   ├── talents/           # ✅ Levver Talents (IMPLEMENTADO)
+│   │   │   ├── pages/         # Páginas do Talents
+│   │   │   │   ├── TalentsDashboard.tsx
+│   │   │   │   └── TalentsDashboard.css
+│   │   │   ├── services/      # API do Talents
+│   │   │   │   └── talentsService.ts
+│   │   │   └── types/         # Types do Talents
+│   │   │       └── talents.types.ts
+│   │   │
 │   │   └── [produto]/         # Futuros módulos de produtos
-│   │       └── ... (MST, Ponto, etc.)
+│   │       └── ... (Ponto, Performance, etc.)
 │   │
 │   ├── components/            # 🧩 Componentes reutilizáveis
 │   │   ├── auth/             # Componentes de autenticação
@@ -286,12 +295,22 @@ export const AppRoutes: React.FC = () => {
             }
           />
 
-          {/* Futuros produtos */}
+          {/* Levver Talents */}
           <Route
-            path="/mst/*"
+            path="/talents"
             element={
               <ProtectedRoute>
-                <MSTModule />
+                <TalentsDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Futuros produtos */}
+          <Route
+            path="/ponto/*"
+            element={
+              <ProtectedRoute>
+                <PontoModule />
               </ProtectedRoute>
             }
           />
@@ -779,4 +798,4 @@ import { FixedSizeList } from 'react-window';
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025
+**Última Atualização**: 16 de Novembro de 2025

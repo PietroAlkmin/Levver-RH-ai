@@ -584,4 +584,4 @@ const ProductCard = styled.div`
 
 ---
 
-**Última Atualização**: 14 de Novembro de 2025
+**Última Atualização**: 16 de Novembro de 2025
