@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { AppRoutes } from './routes/AppRoutes';
+import { useWhiteLabel } from './hooks/useWhiteLabel';
 import './index.css';
 
 function App() {
+  useWhiteLabel();
+
   useEffect(() => {
     console.log('🚀 App - Iniciando aplicação');
     console.log('🔑 App - Token no localStorage:', localStorage.getItem('token') ? localStorage.getItem('token')?.substring(0, 50) + '...' : 'NO TOKEN');

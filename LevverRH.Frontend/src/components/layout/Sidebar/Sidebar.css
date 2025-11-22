@@ -1,98 +1,155 @@
 .sidebar {
   width: 80px;
   height: 100vh;
-  background: linear-gradient(180deg, #E8D9FF 0%, #D4C2F5 50%, #A417D0 100%);
+  background: #FFFFFF;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 1000;
-  box-shadow: none;
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 1300;
+  border: 1px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(180deg, #713BDB 0%, #CC12EF 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border-radius: 40px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
-.sidebar-brand {
-  width: 50px;
-  height: 50px;
-  margin-bottom: 2rem;
+/* Logo favicon */
+.sidebar-logo {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.brand-icon {
+.sidebar-logo img {
   width: 100%;
   height: 100%;
-  background-color: var(--color-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--color-purple);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  object-fit: contain;
 }
 
-.brand-icon:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(164, 23, 208, 0.3);
+/* Linha separadora */
+.sidebar-divider {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, #713BDB 0%, #CC12EF 100%);
+  margin: 1.5rem 0;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(113, 59, 219, 0.2);
 }
 
-.sidebar-nav {
+/* Produtos (texto) */
+.sidebar-products {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   width: 100%;
-  padding: 0 1rem;
+  padding: 0 0.5rem;
+  margin-bottom: auto;
 }
 
-.sidebar-nav-top {
-  flex: 1;
+.product-button {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 16px;
+  text-align: center;
+  writing-mode: horizontal-tb;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.sidebar-nav-bottom {
+.product-button:hover {
+  border-color: #713BDB;
+  color: #713BDB;
+  box-shadow: 0 2px 8px rgba(113, 59, 219, 0.2);
+}
+
+.product-button.active {
+  background: linear-gradient(135deg, #713BDB 0%, #CC12EF 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(113, 59, 219, 0.4);
+}
+
+/* Notificação + Perfil + Configurações */
+.sidebar-bottom {
   margin-top: auto;
-  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-.sidebar-item {
-  width: 50px;
-  height: 50px;
-  border: none;
-  background-color: var(--color-purple);
+.sidebar-icon-button {
+  width: 40px;
+  height: 40px;
+  background: #FFFFFF;
+  border: 1px solid transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(113, 59, 219, 0.15);
 }
 
-.sidebar-item:hover {
-  transform: scale(1.05);
-  background-color: var(--color-dark);
+/* Notificação e Perfil com borda degradê */
+.sidebar-icon-button.notification,
+.sidebar-icon-button.profile {
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #713BDB 0%, #CC12EF 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-.sidebar-item.active {
-  background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.sidebar-icon-button.notification {
+  color: #713BDB;
+  margin-bottom: 1rem;
 }
 
-.sidebar-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  transition: color 0.3s ease;
+.sidebar-icon-button.profile {
+  overflow: hidden;
+  padding: 2px;
 }
 
-.sidebar-item.active .sidebar-icon {
-  color: var(--color-purple);
+.sidebar-icon-button.profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.sidebar-icon-button:hover {
+  box-shadow: 0 4px 12px rgba(113, 59, 219, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Configurações com borda degradê */
+.sidebar-icon-button.settings {
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #713BDB 0%, #CC12EF 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  color: #713BDB;
+}
+
+.sidebar-icon-button.settings:hover {
+  color: #713BDB;
 }
 
 

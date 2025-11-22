@@ -61,6 +61,7 @@ public static class DependencyInjection
         // Application Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IStorageService, AzureBlobStorageService>();
 
         // Talents Services
         services.AddScoped<IJobService, JobService>();

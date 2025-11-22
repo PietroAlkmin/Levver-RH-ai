@@ -1,25 +1,17 @@
 import React from 'react';
+import { Home } from 'lucide-react';
 import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
 import './PainelDashboard.css';
 
 export const PainelDashboard: React.FC = () => {
   return (
-    <MainLayout currentProductName="Painel principal">
+    <MainLayout currentProductName="Painel">
       <div className="painel-dashboard">
-        <div className="dashboard-welcome">
-          <h1>Bem-vindo ao Painel Principal</h1>
-          <p className="dashboard-subtitle">
-            Acompanhe as principais métricas e estatísticas dos seus produtos
-          </p>
-        </div>
-
-        {/* Área de widgets - preparada para futuras implementações */}
-        <div className="dashboard-widgets">
-          <div className="widget-placeholder">
-            <div className="placeholder-icon">📊</div>
-            <h3>Widgets em breve</h3>
-            <p>Esta área exibirá métricas e gráficos dos produtos ativos</p>
+        <div className="empty-state">
+          <div className="empty-icon">
+            <Home size={64} strokeWidth={1.5} />
           </div>
+          <h2>Dashboard em desenvolvimento</h2>
         </div>
       </div>
     </MainLayout>

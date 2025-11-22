@@ -12,6 +12,14 @@
  */
 
 :root {
+  /* ===== WHITE LABEL (Dinâmico por Tenant) ===== */
+  --primary-color: #A417D0;
+  --secondary-color: #11005D;
+  --accent-color: #D4C2F5;
+  --background-color: #FBFBFF;
+  --text-color: #11005D;
+  --border-color: #EAEAF0;
+
   /* ===== CORES PRIMÁRIAS ===== */
   --levver-purple: #A417D0;
   --levver-dark: #11005D;

@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Lock, LogIn } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { Button, Input, Card } from '../../components/common';
 import { AzureAdLoginButton } from '../../components/auth/AzureAdLoginButton';
+import { DynamicLogo } from '../../components/common/DynamicLogo';
 
-// Validação com Zod (espelha FluentValidation do backend)
+// Validação com Zod
 const loginSchema = z.object({
   email: z
     .string()
@@ -21,13 +20,8 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-/**
- * Página de Login
- * Segue padrões de UX de grandes corporações
- */
 export const Login: React.FC = () => {
   const { login, isLoading } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -42,115 +36,112 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-  <Card className="w-full max-w-md">
-        {/* Logo e Título */}
-<div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
- <LogIn className="text-white" size={32} />
- </div>
-   <h1 className="text-3xl font-bold text-gray-900">LevverRH</h1>
-          <p className="text-gray-600 mt-2">Faça login para continuar</p>
-      </div>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background: 'linear-gradient(135deg, #713BDB 0%, #CC12EF 100%)',
+      }}
+    >
+      {/* Card Branco Centralizado */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
+        {/* Logo Dinâmica (puxa do white label ou mostra Levver padrão) */}
+        <DynamicLogo />
 
-    {/* Formulário */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Formulário */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Email */}
           <div>
- <Input
-      {...register('email')}
-     type="email"
-       label="Email"
-              placeholder="seu@email.com"
-     error={errors.email?.message}
-        disabled={isLoading}
-  required
- />
-          </div>
-
-{/* Senha */}
-          <div>
-            <Input
-  {...register('password')}
-          type={showPassword ? 'text' : 'password'}
-     label="Senha"
-         placeholder="••••••••"
-    error={errors.password?.message}
-    disabled={isLoading}
-           required
-            />
-   <button
-      type="button"
-       onClick={() => setShowPassword(!showPassword)}
-         className="text-sm text-blue-600 hover:text-blue-700 mt-1"
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium text-gray-700 mb-1.5"
             >
-      {showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-   </button>
+              email:
+            </label>
+            <input
+              {...register('email')}
+              id="email"
+              type="email"
+              placeholder=""
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+              style={{
+                borderImage: errors.email
+                  ? 'none'
+                  : 'linear-gradient(135deg, #713BDB, #CC12EF) 1',
+              }}
+            />
+            {errors.email && (
+              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+            )}
           </div>
 
-    {/* Esqueci a senha */}
-     <div className="text-right">
-  <Link
-              to="/forgot-password"
-       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-       >
-        Esqueceu a senha?
-            </Link>
+          {/* Senha */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-xs font-medium text-gray-700 mb-1.5"
+            >
+              senha:
+            </label>
+            <input
+              {...register('password')}
+              id="password"
+              type="password"
+              placeholder=""
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+            />
+            {errors.password && (
+              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+            )}
           </div>
 
-          {/* Botão de Login */}
-   <Button
+          {/* Botão LOGIN */}
+          <button
             type="submit"
-            variant="primary"
-            size="lg"
-  fullWidth
-            isLoading={isLoading}
-    >
-    <LogIn size={20} />
-            Entrar
-          </Button>
+            disabled={isLoading}
+            className="w-full py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+            style={{
+              border: '2px solid #713BDB',
+              color: '#713BDB',
+              backgroundColor: 'white',
+            }}
+          >
+            {isLoading ? 'CARREGANDO...' : 'LOGIN'}
+          </button>
         </form>
 
         {/* Divisor */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-200"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Ou</span>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-white text-gray-500">ou</span>
           </div>
         </div>
 
-        {/* Login com Microsoft */}
+        {/* Botão Microsoft SSO */}
         <AzureAdLoginButton />
 
         {/* Divisor */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-200"></div>
           </div>
         </div>
 
-        {/* Cadastro */}
-<div className="text-center">
-          <p className="text-gray-600">
-  Não tem uma conta?{' '}
-            <Link
-              to="/register-tenant"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
-            >
-   Cadastre sua empresa
-  </Link>
-          </p>
-   </div>
-
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-     <p className="text-xs text-gray-500">
-       &copy; 2025 LevverRH. Todos os direitos reservados.
-          </p>
+        {/* Link Cadastro */}
+        <div className="text-center">
+          <Link
+            to="/register-tenant"
+            className="text-sm font-medium hover:underline"
+            style={{ color: '#713BDB' }}
+          >
+            Cadastre sua empresa
+          </Link>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
