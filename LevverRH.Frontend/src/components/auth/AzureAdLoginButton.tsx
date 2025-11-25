@@ -99,16 +99,21 @@ export const AzureAdLoginButton: React.FC = () => {
   };
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
       onClick={handleAzureAdLogin}
       disabled={isLoading}
-      className="w-full flex items-center justify-center gap-2"
+      className="w-full flex items-center justify-center gap-2 py-2.5 font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+      style={{
+        border: '1px solid #E5E7EB',
+        borderRadius: '8px',
+        background: 'white',
+        color: '#111827'
+      }}
     >
       {isLoading ? (
         <>
-          <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#713BDB' }} />
           <span>Conectando...</span>
         </>
       ) : (
@@ -123,6 +128,6 @@ export const AzureAdLoginButton: React.FC = () => {
           <span>Entrar com Microsoft</span>
         </>
       )}
-    </Button>
+    </button>
   );
 };

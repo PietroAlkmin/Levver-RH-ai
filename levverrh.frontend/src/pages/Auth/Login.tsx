@@ -36,42 +36,55 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background: 'linear-gradient(135deg, #713BDB 0%, #CC12EF 100%)',
-      }}
-    >
-      {/* Card Branco Centralizado */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-        {/* Logo Dinâmica (puxa do white label ou mostra Levver padrão) */}
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'radial-gradient(circle at top, rgba(113, 59, 219, 0.40) 0%, rgba(204, 18, 239, 0.15) 40%, #F9FAFB 70%)' }}>
+      {/* Card Centralizado */}
+      <div className="w-full max-w-md bg-white p-8" style={{ borderRadius: '8px', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}>
+        {/* Logo Dinâmica */}
         <DynamicLogo />
 
-        {/* Formulário */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Botão Microsoft SSO - Destaque */}
+        <div className="mb-6">
+          <AzureAdLoginButton />
+        </div>
+
+        {/* Divisor */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full" style={{ borderTop: '1px solid #E5E7EB' }}></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-white" style={{ color: '#6B7280' }}>ou continue com email</span>
+          </div>
+        </div>
+
+        {/* Formulário de Login */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div>
             <label
               htmlFor="email"
-              className="block text-xs font-medium text-gray-700 mb-1.5"
+              className="block text-sm font-medium mb-1.5"
+              style={{ color: '#111827' }}
             >
-              email:
+              Email
             </label>
             <input
               {...register('email')}
               id="email"
               type="email"
-              placeholder=""
+              placeholder="seu@email.com"
               disabled={isLoading}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+              className="w-full px-4 py-2.5 text-sm transition-all focus:outline-none"
               style={{
-                borderImage: errors.email
-                  ? 'none'
-                  : 'linear-gradient(135deg, #713BDB, #CC12EF) 1',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                color: '#111827'
               }}
+              onFocus={(e) => e.target.style.border = '1px solid #713BDB'}
+              onBlur={(e) => e.target.style.border = '1px solid #E5E7EB'}
             />
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+              <p className="text-xs mt-1.5" style={{ color: '#E84358' }}>{errors.email.message}</p>
             )}
           </div>
 
@@ -79,67 +92,65 @@ export const Login: React.FC = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-gray-700 mb-1.5"
+              className="block text-sm font-medium mb-1.5"
+              style={{ color: '#111827' }}
             >
-              senha:
+              Senha
             </label>
             <input
               {...register('password')}
               id="password"
               type="password"
-              placeholder=""
+              placeholder="••••••••"
               disabled={isLoading}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm"
+              className="w-full px-4 py-2.5 text-sm transition-all focus:outline-none"
+              style={{
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                color: '#111827'
+              }}
+              onFocus={(e) => e.target.style.border = '1px solid #713BDB'}
+              onBlur={(e) => e.target.style.border = '1px solid #E5E7EB'}
             />
             {errors.password && (
-              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+              <p className="text-xs mt-1.5" style={{ color: '#E84358' }}>{errors.password.message}</p>
             )}
           </div>
 
-          {/* Botão LOGIN */}
+          {/* Botão Login */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
+            className="w-full py-2.5 font-semibold text-sm text-white transition-all hover:opacity-90 disabled:opacity-50 mt-6"
             style={{
-              border: '2px solid #713BDB',
-              color: '#713BDB',
-              backgroundColor: 'white',
+              background: 'linear-gradient(135deg, #713BDB 0%, #CC12EF 100%)',
+              borderRadius: '8px',
+              border: 'none'
             }}
           >
-            {isLoading ? 'CARREGANDO...' : 'LOGIN'}
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
-        {/* Divisor */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="px-3 bg-white text-gray-500">ou</span>
-          </div>
-        </div>
-
-        {/* Botão Microsoft SSO */}
-        <AzureAdLoginButton />
-
-        {/* Divisor */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-        </div>
-
         {/* Link Cadastro */}
-        <div className="text-center">
-          <Link
-            to="/register-tenant"
-            className="text-sm font-medium hover:underline"
-            style={{ color: '#713BDB' }}
-          >
-            Cadastre sua empresa
-          </Link>
+        <div className="mt-6 text-center">
+          <p className="text-sm" style={{ color: '#6B7280' }}>
+            Não tem uma conta?{' '}
+            <Link
+              to="/register-tenant"
+              className="font-semibold hover:underline"
+              style={{ color: '#713BDB' }}
+            >
+              Cadastre sua empresa
+            </Link>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid #E5E7EB' }}>
+          <p className="text-xs" style={{ color: '#6B7280' }}>
+            © 2025 Levver. Todos os direitos reservados.
+          </p>
         </div>
       </div>
     </div>

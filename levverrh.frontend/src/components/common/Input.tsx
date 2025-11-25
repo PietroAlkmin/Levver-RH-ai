@@ -7,7 +7,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 /**
- * Componente Input reutilizável
+ * Componente Input reutilizï¿½vel
  * Integrado com React Hook Form
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -15,32 +15,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: '#111827' }}>
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="ml-1" style={{ color: '#E84358' }}>*</span>}
   </label>
  )}
 
         <input
           ref={ref}
-    className={`
- w-full px-4 py-2 
- border rounded-lg
-   focus:ring-2 focus:ring-blue-500 focus:border-transparent
-            outline-none transition-all
- ${error ? 'border-red-500' : 'border-gray-300'}
-            ${props.disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
-            ${className}
-          `}
+    className={`w-full px-4 py-2 outline-none transition-all ${props.disabled ? 'cursor-not-allowed' : ''} ${className}`}
+          style={{
+            border: error ? '1px solid #E84358' : '1px solid #E5E7EB',
+            borderRadius: '8px',
+            background: props.disabled ? '#F9FAFB' : 'white',
+            color: '#111827'
+          }}
+          onFocus={(e) => !error && (e.target.style.border = '1px solid #713BDB')}
+          onBlur={(e) => !error && (e.target.style.border = '1px solid #E5E7EB')}
           {...props}
         />
 
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm" style={{ color: '#E84358' }}>{error}</p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>{helperText}</p>
         )}
       </div>
   );
