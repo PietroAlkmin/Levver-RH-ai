@@ -1,66 +1,51 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, Sparkles, ChevronDown } from 'lucide-react';
+import { Sparkles, ChevronDown } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 
-interface HeaderProps {
-  currentProductName?: string;
-  onMenuClick?: () => void;
-}
-
-export const Header: React.FC<HeaderProps> = ({ 
-  currentProductName = 'Painel', 
-  onMenuClick 
-}) => {
+export const Header: React.FC = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleAIClick = () => {
-    console.log('Abrir assistente IA');
-  };
+  const currentPanel = location.pathname.startsWith('/talents') ? 'Painel Talents' : 'Painel principal';
 
-  const handleProductChange = (path: string) => {
+  const handlePanelChange = (path: string) => {
     navigate(path);
     setShowDropdown(false);
   };
 
-  const dropdownLabel = currentProductName === 'Painel' ? 'Painel principal' : 'Painel Talents';
-
   return (
     <header className="main-header">
-      <div className="header-left">
-        <h1 className="header-title">{dropdownLabel}</h1>
-      </div>
-      
       <div className="header-right">
-        <div className="product-dropdown">
+        <div className="header-product-dropdown">
           <button 
-            className="dropdown-trigger"
+            className="header-dropdown-trigger"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <span>{dropdownLabel}</span>
+            <span>{currentPanel}</span>
             <ChevronDown size={16} />
           </button>
-
           {showDropdown && (
-            <div className="dropdown-menu">
+            <div className="header-dropdown-menu">
               <button 
-                className="dropdown-item" 
-                onClick={() => handleProductChange('/painel')}
+                className={`header-dropdown-item ${currentPanel === 'Painel principal' ? 'active' : ''}`}
+                onClick={() => handlePanelChange('/')}
               >
-                Painel principal
+                <span className="header-dropdown-item-title">Painel principal</span>
+                {currentPanel === 'Painel principal' && <span className="header-dropdown-check">✓</span>}
               </button>
               <button 
-                className="dropdown-item" 
-                onClick={() => handleProductChange('/talents')}
+                className={`header-dropdown-item ${currentPanel === 'Painel Talents' ? 'active' : ''}`}
+                onClick={() => handlePanelChange('/talents')}
               >
-                Painel Talents
+                <span className="header-dropdown-item-title">Painel Talents</span>
+                {currentPanel === 'Painel Talents' && <span className="header-dropdown-check">✓</span>}
               </button>
             </div>
           )}
         </div>
-
-        <button className="ai-button" onClick={handleAIClick}>
+        <button className="ai-button">
           <Sparkles size={18} />
           <span>Pergunte para a Levver</span>
         </button>

@@ -4,18 +4,24 @@ import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
 
 const TalentsDashboard: React.FC = () => {
   return (
-    <MainLayout currentProductName="Talents">
+    <MainLayout>
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 80px)',
-        textAlign: 'center'
+        padding: '2rem',
+        minHeight: 'calc(100vh - 64px)'
       }}>
-        <div>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 64px - 4rem)',
+          textAlign: 'center'
+        }}>
           <div style={{ 
             marginBottom: '1rem',
-            color: '#6B7280'
+            color: '#6B7280',
+            display: 'flex',
+            justifyContent: 'center'
           }}>
             <Briefcase size={64} strokeWidth={1.5} />
           </div>

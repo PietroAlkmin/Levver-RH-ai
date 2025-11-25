@@ -5,7 +5,7 @@ import './PainelDashboard.css';
 
 export const PainelDashboard: React.FC = () => {
   return (
-    <MainLayout currentProductName="Painel">
+    <MainLayout>
       <div className="painel-dashboard">
         <div className="empty-state">
           <div className="empty-icon">

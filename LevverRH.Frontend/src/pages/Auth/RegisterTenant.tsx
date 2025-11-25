@@ -191,25 +191,25 @@ export const RegisterTenant: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'radial-gradient(circle at top, rgba(113, 59, 219, 0.40) 0%, rgba(204, 18, 239, 0.15) 40%, #F9FAFB 70%)' }}>
+      <div className="w-full max-w-2xl bg-white p-8" style={{ borderRadius: '8px', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}>
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full" style={{ background: 'linear-gradient(135deg, #713BDB 0%, #CC12EF 100%)' }}>
             <Building2 className="text-white" size={32} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold" style={{ color: '#111827' }}>
             {isSsoMode ? 'Complete seu Cadastro' : 'Cadastrar Empresa'}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm mt-2" style={{ color: '#6B7280' }}>
             {isSsoMode
               ? 'Preencha os dados da sua empresa para finalizar'
-              : 'Preencha os dados para começar a usar o LevverRH'}
+              : 'Preencha os dados para começar a usar o Levver'}
           </p>
           {isSsoMode && user && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-              <User size={16} className="text-blue-600" />
-              <span className="text-sm text-blue-900">
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2" style={{ background: '#F9FAFB', borderRadius: '8px' }}>
+              <User size={16} style={{ color: '#713BDB' }} />
+              <span className="text-sm" style={{ color: '#111827' }}>
                 Logado como: <strong>{user.nome}</strong> ({user.email})
               </span>
             </div>
@@ -220,8 +220,8 @@ export const RegisterTenant: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Seção: Dados da Empresa */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Building2 size={20} className="mr-2 text-blue-600" />
+            <h2 className="text-lg font-semibold mb-4 flex items-center" style={{ color: '#111827' }}>
+              <Building2 size={20} className="mr-2" style={{ color: '#713BDB' }} />
               Dados da Empresa
             </h2>
             <div className="space-y-4">
@@ -282,8 +282,8 @@ export const RegisterTenant: React.FC = () => {
           {/* Seção: Dados do Administrador (apenas se não for SSO) */}
           {!isSsoMode && (
             <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <User size={20} className="mr-2 text-blue-600" />
+            <h2 className="text-lg font-semibold mb-4 flex items-center" style={{ color: '#111827' }}>
+              <User size={20} className="mr-2" style={{ color: '#713BDB' }} />
               Dados do Administrador
             </h2>
             <div className="space-y-4">
@@ -320,7 +320,8 @@ export const RegisterTenant: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-sm text-blue-600 hover:text-blue-700 mt-1"
+                    className="text-sm hover:underline mt-1"
+                    style={{ color: '#713BDB' }}
                   >
                     {showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   </button>
@@ -338,11 +339,11 @@ export const RegisterTenant: React.FC = () => {
               </div>
 
               {/* Requisitos de Senha */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-800 font-medium mb-2">
+              <div className="p-3" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+                <p className="text-xs font-medium mb-2" style={{ color: '#713BDB' }}>
                   A senha deve conter:
                 </p>
-                <ul className="text-xs text-blue-700 space-y-1">
+                <ul className="text-xs space-y-1" style={{ color: '#6B7280' }}>
                   <li>✓ Mínimo de 6 caracteres</li>
                   <li>✓ Pelo menos uma letra maiúscula</li>
                   <li>✓ Pelo menos uma letra minúscula</li>
@@ -370,11 +371,12 @@ export const RegisterTenant: React.FC = () => {
         {/* Footer (apenas se não for SSO) */}
         {!isSsoMode && (
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-sm" style={{ color: '#6B7280' }}>
               Já tem uma conta?{' '}
               <Link
                 to="/login"
-                className="text-blue-600 hover:text-blue-700 font-semibold"
+                className="font-semibold hover:underline"
+                style={{ color: '#713BDB' }}
               >
                 Fazer login
               </Link>
@@ -382,12 +384,12 @@ export const RegisterTenant: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-          <p className="text-xs text-gray-500">
-            &copy; 2025 LevverRH. Todos os direitos reservados.
+        <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid #E5E7EB' }}>
+          <p className="text-xs" style={{ color: '#6B7280' }}>
+            &copy; 2025 Levver. Todos os direitos reservados.
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

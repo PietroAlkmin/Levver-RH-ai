@@ -9,8 +9,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * Componente Button reutilizável
- * Segue padrões de design system
+ * Componente Button reutilizï¿½vel
+ * Segue padrï¿½es de design system
  */
 export const Button: React.FC<ButtonProps> = ({
   children,
@@ -22,13 +22,44 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantStyles = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-    danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md',
-    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
+    primary: 'text-white',
+    secondary: 'text-white',
+    danger: 'text-white',
+    outline: 'bg-white',
+  };
+
+  const getVariantStyle = (variant: string) => {
+    switch(variant) {
+      case 'primary':
+        return {
+          background: 'linear-gradient(135deg, #713BDB 0%, #CC12EF 100%)',
+          borderRadius: '8px',
+          border: 'none'
+        };
+      case 'secondary':
+        return {
+          background: '#6B7280',
+          borderRadius: '8px',
+          border: 'none'
+        };
+      case 'danger':
+        return {
+          background: '#E84358',
+          borderRadius: '8px',
+          border: 'none'
+        };
+      case 'outline':
+        return {
+          border: '1px solid #E5E7EB',
+          borderRadius: '8px',
+          color: '#111827'
+        };
+      default:
+        return {};
+    }
   };
 
   const sizeStyles = {
@@ -42,6 +73,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${className}`}
+      style={getVariantStyle(variant)}
    disabled={disabled || isLoading}
       {...props}
     >

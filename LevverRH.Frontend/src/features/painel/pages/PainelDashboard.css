@@ -1,7 +1,6 @@
 .painel-dashboard {
+  min-height: calc(100vh - 64px);
   padding: 2rem;
-  min-height: calc(100vh - 80px);
-  background-color: #F5F7FA;
 }
 
 .empty-state {
@@ -9,7 +8,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  min-height: calc(100vh - 64px - 4rem);
   text-align: center;
 }
 
