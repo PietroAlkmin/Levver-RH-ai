@@ -13,37 +13,34 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, className = '', ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div>
         {label && (
-        <label className="block text-sm font-medium mb-1" style={{ color: '#111827' }}>
+          <label htmlFor={props.id} className="auth-label">
             {label}
-            {props.required && <span className="ml-1" style={{ color: '#E84358' }}>*</span>}
-  </label>
- )}
+            {props.required && <span style={{ color: 'var(--error-color)', marginLeft: '0.25rem' }}>*</span>}
+          </label>
+        )}
 
         <input
           ref={ref}
-    className={`w-full px-4 py-2 outline-none transition-all ${props.disabled ? 'cursor-not-allowed' : ''} ${className}`}
+          className={`auth-input ${error ? 'auth-input-error' : ''} ${className}`}
           style={{
-            border: error ? '1px solid #E84358' : '1px solid #E5E7EB',
-            borderRadius: '8px',
-            background: props.disabled ? '#F9FAFB' : 'white',
-            color: '#111827'
+            borderColor: error ? 'var(--error-color)' : undefined,
+            background: props.disabled ? 'var(--background-secondary)' : undefined,
+            cursor: props.disabled ? 'not-allowed' : undefined,
           }}
-          onFocus={(e) => !error && (e.target.style.border = '1px solid #713BDB')}
-          onBlur={(e) => !error && (e.target.style.border = '1px solid #E5E7EB')}
           {...props}
         />
 
         {error && (
-          <p className="mt-1 text-sm" style={{ color: '#E84358' }}>{error}</p>
+          <p className="auth-error">{error}</p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>{helperText}</p>
+          <p className="auth-error" style={{ color: 'var(--text-secondary)' }}>{helperText}</p>
         )}
       </div>
-  );
+    );
   }
 );
 

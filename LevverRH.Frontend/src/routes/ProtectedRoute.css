@@ -1,0 +1,28 @@
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-secondary);
+}
+
+.error-content {
+  text-align: center;
+}
+
+.error-code {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.error-title {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.error-description {
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+}

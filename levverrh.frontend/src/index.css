@@ -1,7 +1,7 @@
-@import "tailwindcss";
-
-/* Levver.ai Design System - Cores Oficiais */
+/* Levver.ai Design System */
+@import "./styles/design-tokens.css";
 @import "./styles/levver-design-system.css";
+@import "./styles/utilities.css";
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

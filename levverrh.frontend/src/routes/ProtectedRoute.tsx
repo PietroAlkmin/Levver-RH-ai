@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Loading } from '../components/common';
+import './ProtectedRoute.css';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -45,11 +46,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
   if (!hasRequiredRole) {
       return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">403</h1>
-            <p className="text-xl text-gray-600">Acesso negado</p>
-            <p className="text-gray-500 mt-2">Voc� n�o tem permiss�o para acessar esta p�gina.</p>
+        <div className="error-page">
+          <div className="error-content">
+            <h1 className="error-code">403</h1>
+            <p className="error-title">Acesso negado</p>
+            <p className="error-description">Você não tem permissão para acessar esta página.</p>
           </div>
         </div>
       );

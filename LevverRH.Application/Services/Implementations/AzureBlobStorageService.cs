@@ -10,6 +10,7 @@ public class AzureBlobStorageService : IStorageService
     private readonly BlobServiceClient _blobServiceClient;
     private const string LogosContainer = "logos";
     private const string FaviconsContainer = "favicons";
+    private const string ProfilePhotosContainer = "profile-photos";
 
     public AzureBlobStorageService(IConfiguration configuration)
     {
@@ -25,6 +26,11 @@ public class AzureBlobStorageService : IStorageService
     public async Task<string> UploadFaviconAsync(Guid tenantId, Stream fileStream, string fileName, string contentType)
     {
         return await UploadFileAsync(FaviconsContainer, tenantId, fileStream, fileName, contentType);
+    }
+
+    public async Task<string> UploadProfilePhotoAsync(Guid userId, Stream fileStream, string fileName, string contentType)
+    {
+        return await UploadFileAsync(ProfilePhotosContainer, userId, fileStream, fileName, contentType);
     }
 
     public async Task<bool> DeleteFileAsync(string fileUrl)
