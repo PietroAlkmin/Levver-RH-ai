@@ -11,8 +11,10 @@ using LevverRH.Infra.Data.Context;
 using LevverRH.Infra.Data.Repositories;
 using LevverRH.Infra.Data.Repositories.Talents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAI;
 
 namespace LevverRH.Infra.IoC;
 
@@ -68,6 +70,16 @@ public static class DependencyInjection
         services.AddScoped<ICandidateService, CandidateService>();
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IDashboardService, DashboardService>();
+
+        // AI Services (OpenAI)
+        services.AddSingleton<IChatClient>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey não configurada no appsettings.json");
+            var model = config["OpenAI:Model"] ?? "gpt-4o-mini";
+            return new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient();
+        });
+        services.AddScoped<IJobAIService, JobAIService>();
 
         return services;
     }
