@@ -112,5 +112,108 @@ namespace LevverRH.WebApp.Controllers.Talents
             
             return Ok(result);
         }
+
+        #region Criação com IA
+
+        /// <summary>
+        /// Inicia criação de vaga assistida por IA
+        /// </summary>
+        [HttpPost("ai/start")]
+        public async Task<IActionResult> StartAICreation([FromBody] StartJobCreationDTO dto)
+        {
+            var tenantId = GetTenantId();
+            var userId = GetUserId();
+            var result = await _jobService.StartJobCreationWithAIAsync(dto, tenantId, userId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// [DEV] Inicia criação de vaga com IA - SEM AUTENTICAÇÃO (apenas para testes)
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("ai/start-dev")]
+        public async Task<IActionResult> StartAICreationDev([FromBody] StartJobCreationDTO dto)
+        {
+            // IDs fixos para teste - substitua pelos IDs reais do seu banco
+            var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111"); // Tenant de teste
+            var userId = Guid.Parse("22222222-2222-2222-2222-222222222222");   // User de teste
+            
+            var result = await _jobService.StartJobCreationWithAIAsync(dto, tenantId, userId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Envia mensagem no chat de criação de vaga com IA
+        /// </summary>
+        [HttpPost("ai/chat")]
+        public async Task<IActionResult> ProcessAIChatMessage([FromBody] JobChatMessageDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var tenantId = GetTenantId();
+            var result = await _jobService.ProcessAIChatMessageAsync(dto, tenantId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Finaliza criação de vaga e opcionalmente publica
+        /// </summary>
+        [HttpPost("ai/complete")]
+        public async Task<IActionResult> CompleteAICreation([FromBody] CompleteJobCreationDTO dto)
+        {
+            var tenantId = GetTenantId();
+            var result = await _jobService.CompleteJobCreationAsync(dto, tenantId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtém detalhes completos de uma vaga (incluindo todos os campos)
+        /// </summary>
+        [HttpGet("{id}/detail")]
+        public async Task<IActionResult> GetDetailById(Guid id)
+        {
+            var tenantId = GetTenantId();
+            var result = await _jobService.GetDetailByIdAsync(id, tenantId);
+            
+            if (!result.Success)
+                return NotFound(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Lista rascunhos do usuário atual
+        /// </summary>
+        [HttpGet("drafts")]
+        public async Task<IActionResult> GetMyDrafts()
+        {
+            var tenantId = GetTenantId();
+            var userId = GetUserId();
+            var result = await _jobService.GetDraftsByUserAsync(userId, tenantId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        #endregion
     }
 }
