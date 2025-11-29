@@ -103,27 +103,21 @@ export const AzureAdLoginButton: React.FC = () => {
       type="button"
       onClick={handleAzureAdLogin}
       disabled={isLoading}
-      className="w-full flex items-center justify-center gap-2 py-2.5 font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-50"
-      style={{
-        border: '1px solid #E5E7EB',
-        borderRadius: '8px',
-        background: 'white',
-        color: '#111827'
-      }}
+      className="microsoft-sso-button"
     >
       {isLoading ? (
         <>
-          <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#713BDB' }} />
+          <div className="microsoft-sso-spinner" />
           <span>Conectando...</span>
         </>
       ) : (
         <>
-          <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
-            {/* Logo da Microsoft */}
-            <path fill="#f25022" d="M0 0h11v11H0z" />
-            <path fill="#00a4ef" d="M12 0h11v11H12z" />
-            <path fill="#7fba00" d="M0 12h11v11H0z" />
-            <path fill="#ffb900" d="M12 12h11v11H12z" />
+          <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Logo oficial Microsoft */}
+            <rect width="10" height="10" fill="#F25022"/>
+            <rect x="11" width="10" height="10" fill="#7FBA00"/>
+            <rect y="11" width="10" height="10" fill="#00A4EF"/>
+            <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
           </svg>
           <span>Entrar com Microsoft</span>
         </>

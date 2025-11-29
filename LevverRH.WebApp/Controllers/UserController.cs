@@ -7,18 +7,20 @@ namespace LevverRH.WebApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize] // ? Todos os endpoints precisam de autenticação
+[Authorize] // ? Todos os endpoints precisam de autenticaÃ§Ã£o
 public class UserController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
+    private readonly IStorageService _storageService;
 
-    public UserController(IUserRepository userRepository)
+    public UserController(IUserRepository userRepository, IStorageService storageService)
     {
         _userRepository = userRepository;
+        _storageService = storageService;
     }
 
     /// <summary>
-    /// Obter informações do usuário logado
+    /// Obter informaï¿½ï¿½es do usuï¿½rio logado
     /// </summary>
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentUser()
@@ -26,12 +28,12 @@ public class UserController : ControllerBase
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userId))
-            return Unauthorized(new { message = "Token inválido" });
+            return Unauthorized(new { message = "Token invï¿½lido" });
 
         var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
 
         if (user == null)
-            return NotFound(new { message = "Usuário não encontrado" });
+            return NotFound(new { message = "Usuï¿½rio nï¿½o encontrado" });
 
         return Ok(new
         {
@@ -47,7 +49,7 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// Listar todos os usuários do tenant (Admin apenas)
+    /// Listar todos os usuï¿½rios do tenant (Admin apenas)
     /// </summary>
     [HttpGet]
     [Authorize(Policy = "AdminOnly")] // ? Apenas Admins
@@ -56,7 +58,7 @@ public class UserController : ControllerBase
         var tenantId = User.FindFirst("TenantId")?.Value;
 
         if (string.IsNullOrEmpty(tenantId))
-            return Unauthorized(new { message = "TenantId não encontrado no token" });
+            return Unauthorized(new { message = "TenantId nï¿½o encontrado no token" });
 
         var users = await _userRepository.GetByTenantIdAsync(Guid.Parse(tenantId));
 
@@ -80,7 +82,7 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// Obter usuário por ID (Admin ou Recruiter)
+    /// Obter usuï¿½rio por ID (Admin ou Recruiter)
     /// </summary>
     [HttpGet("{id:guid}")]
     [Authorize(Policy = "AdminOrRecruiter")]
@@ -90,9 +92,9 @@ public class UserController : ControllerBase
         var user = await _userRepository.GetByIdAsync(id);
 
         if (user == null)
-            return NotFound(new { message = "Usuário não encontrado" });
+            return NotFound(new { message = "Usuï¿½rio nï¿½o encontrado" });
 
-        // Verificar se o usuário pertence ao mesmo tenant
+        // Verificar se o usuï¿½rio pertence ao mesmo tenant
         if (user.TenantId.ToString() != tenantId)
             return Forbid(); // 403 Forbidden
 
@@ -111,7 +113,7 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// Desativar usuário (Admin apenas)
+    /// Desativar usuï¿½rio (Admin apenas)
     /// </summary>
     [HttpPatch("{id:guid}/deactivate")]
     [Authorize(Policy = "AdminOnly")]
@@ -121,12 +123,12 @@ public class UserController : ControllerBase
         var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (id.ToString() == currentUserId)
-            return BadRequest(new { message = "Você não pode desativar sua própria conta" });
+            return BadRequest(new { message = "Vocï¿½ nï¿½o pode desativar sua prï¿½pria conta" });
 
         var user = await _userRepository.GetByIdAsync(id);
 
         if (user == null)
-            return NotFound(new { message = "Usuário não encontrado" });
+            return NotFound(new { message = "Usuï¿½rio nï¿½o encontrado" });
 
         if (user.TenantId.ToString() != tenantId)
             return Forbid();
@@ -136,13 +138,13 @@ public class UserController : ControllerBase
 
         return Ok(new
         {
-            message = "Usuário desativado com sucesso",
+            message = "Usuï¿½rio desativado com sucesso",
             userId = id
         });
     }
 
     /// <summary>
-    /// Ativar usuário (Admin apenas)
+    /// Ativar usuï¿½rio (Admin apenas)
     /// </summary>
     [HttpPatch("{id:guid}/activate")]
     [Authorize(Policy = "AdminOnly")]
@@ -152,7 +154,7 @@ public class UserController : ControllerBase
         var user = await _userRepository.GetByIdAsync(id);
 
         if (user == null)
-            return NotFound(new { message = "Usuário não encontrado" });
+            return NotFound(new { message = "Usuï¿½rio nï¿½o encontrado" });
 
         if (user.TenantId.ToString() != tenantId)
             return Forbid();
@@ -162,8 +164,105 @@ public class UserController : ControllerBase
 
         return Ok(new
         {
-            message = "Usuário ativado com sucesso",
+            message = "UsuÃ¡rio ativado com sucesso",
             userId = id
         });
+    }
+
+    /// <summary>
+    /// Upload de foto de perfil do usuÃ¡rio logado
+    /// </summary>
+    [HttpPost("photo")]
+    public async Task<IActionResult> UploadProfilePhoto(IFormFile file)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized(new { message = "Token invÃ¡lido" });
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "Nenhum arquivo foi enviado" });
+
+        // Validar tipo de arquivo
+        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+            return BadRequest(new { message = "Tipo de arquivo nÃ£o permitido. Use JPG, PNG ou GIF" });
+
+        // Validar tamanho (mÃ¡x 5MB)
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { message = "O arquivo deve ter no mÃ¡ximo 5MB" });
+
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
+
+            if (user == null)
+                return NotFound(new { message = "UsuÃ¡rio nÃ£o encontrado" });
+
+            // Deletar foto antiga se existir
+            if (!string.IsNullOrEmpty(user.FotoUrl))
+            {
+                await _storageService.DeleteFileAsync(user.FotoUrl);
+            }
+
+            // Upload da nova foto
+            using var stream = file.OpenReadStream();
+            var photoUrl = await _storageService.UploadProfilePhotoAsync(
+                Guid.Parse(userId),
+                stream,
+                file.FileName,
+                file.ContentType
+            );
+
+            // Atualizar usuÃ¡rio
+            user.AtualizarFoto(photoUrl);
+            await _userRepository.UpdateAsync(user);
+
+            return Ok(new
+            {
+                message = "Foto atualizada com sucesso",
+                fotoUrl = photoUrl
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao fazer upload da foto", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Remover foto de perfil do usuÃ¡rio logado
+    /// </summary>
+    [HttpDelete("photo")]
+    public async Task<IActionResult> DeleteProfilePhoto()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized(new { message = "Token invÃ¡lido" });
+
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
+
+            if (user == null)
+                return NotFound(new { message = "UsuÃ¡rio nÃ£o encontrado" });
+
+            if (string.IsNullOrEmpty(user.FotoUrl))
+                return BadRequest(new { message = "UsuÃ¡rio nÃ£o possui foto de perfil" });
+
+            // Deletar foto do blob
+            await _storageService.DeleteFileAsync(user.FotoUrl);
+
+            // Atualizar usuÃ¡rio
+            user.AtualizarFoto(null);
+            await _userRepository.UpdateAsync(user);
+
+            return Ok(new { message = "Foto removida com sucesso" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao remover foto", error = ex.Message });
+        }
     }
 }

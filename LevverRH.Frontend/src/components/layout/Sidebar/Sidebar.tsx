@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Plus, List, Menu, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Plus, List, Menu, ChevronDown, Bell, Settings, LogOut } from 'lucide-react';
+import { useAuthStore } from '../../../stores/authStore';
+import { SettingsModal } from './SettingsModal';
 import './Sidebar.css';
 
 interface MenuItem {
@@ -15,6 +17,10 @@ export const Sidebar: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  
+  const { user, tenant, clearAuth } = useAuthStore();
 
   const currentProduct = location.pathname.startsWith('/talents') ? 'Talents' : 'Painel principal';
 
@@ -38,7 +44,21 @@ export const Sidebar: React.FC = () => {
   };
 
   const handleMouseLeave = () => {
-    if (!isPinned) setIsExpanded(false);
+    if (!isPinned) {
+      setIsExpanded(false);
+      setShowDropdown(false);
+      setShowUserMenu(false);
+    }
+  };
+
+  const handleOpenSettings = () => {
+    setShowUserMenu(false);
+    setShowSettingsModal(true);
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate('/login');
   };
 
   const togglePin = () => {
@@ -50,6 +70,10 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
+      <SettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+      />
       <aside 
         className={`sidebar ${shouldExpand ? 'expanded' : ''}`}
         onMouseEnter={handleMouseEnter}
@@ -125,6 +149,46 @@ export const Sidebar: React.FC = () => {
           </button>
         ))}
       </nav>
+
+      {/* User Footer */}
+      <div className="sidebar-footer">
+        <button 
+          className="user-button"
+          onClick={() => setShowUserMenu(!showUserMenu)}
+        >
+          <div className="user-avatar">
+            {user?.fotoUrl ? (
+              <img src={user.fotoUrl} alt={user.nome} className="user-avatar-image" />
+            ) : (
+              user?.nome?.charAt(0).toUpperCase() || 'U'
+            )}
+          </div>
+          {shouldExpand && (
+            <div className="user-info">
+              <div className="user-name">{user?.nome || 'Usuário'}</div>
+              <div className="user-tenant">{tenant?.nome || 'Empresa'}</div>
+            </div>
+          )}
+        </button>
+
+        {showUserMenu && shouldExpand && (
+          <div className="user-menu">
+            <button className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+              <Bell size={16} />
+              <span>Notificações</span>
+            </button>
+            <button className="user-menu-item" onClick={handleOpenSettings}>
+              <Settings size={16} />
+              <span>Configurações</span>
+            </button>
+            <div className="user-menu-divider"></div>
+            <button className="user-menu-item user-menu-item-danger" onClick={handleLogout}>
+              <LogOut size={16} />
+              <span>Sair</span>
+            </button>
+          </div>
+        )}
+      </div>
     </aside>
     
     <button 

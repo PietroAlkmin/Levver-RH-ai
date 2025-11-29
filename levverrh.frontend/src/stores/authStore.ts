@@ -17,6 +17,7 @@ interface AuthState {
   clearAuth: () => void;
   setLoading: (isLoading: boolean) => void;
   updateUser: (user: Partial<UserInfo>) => void;
+  updateUserPhoto: (fotoUrl: string | null) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
@@ -63,6 +64,11 @@ export const useAuthStore = create<AuthState>()(
         updateUser: user =>
           set(state => ({
             user: state.user ? { ...state.user, ...user } : null,
+          })),
+
+        updateUserPhoto: (fotoUrl: string | null) =>
+          set(state => ({
+            user: state.user ? { ...state.user, fotoUrl } : null,
           })),
 
         setHasHydrated: hasHydrated => set({ _hasHydrated: hasHydrated }),
