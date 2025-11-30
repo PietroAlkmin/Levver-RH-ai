@@ -436,6 +436,9 @@ public class JobService : IJobService
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ ProcessAIChatMessageAsync - EXCEPTION: {ex.Message}");
+            Console.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
+            Console.WriteLine($"❌ Inner Exception: {ex.InnerException?.Message}");
             return ResultDTO<JobChatResponseDTO>.FailureResult($"Erro ao processar mensagem: {ex.Message}");
         }
     }
@@ -624,11 +627,20 @@ public class JobService : IJobService
                 if (Enum.TryParse<WorkModel>(value?.ToString(), true, out var modeloTrabalho))
                     job.ModeloTrabalho = modeloTrabalho;
                 break;
-            case "anosExperienciaminimo":
+            case "anosexperienciaminimo":
             case "anosdeexperienciaminimo":
             case "anosdeexperiencia":
+            case "experiencia":
+                Console.WriteLine($"🎯 UpdateJobField - Tentando converter anosExperiencia: '{value}'");
                 if (int.TryParse(value?.ToString(), out var anosExp))
+                {
+                    Console.WriteLine($"✅ UpdateJobField - anosExperiencia definido para: {anosExp}");
                     job.AnosExperienciaMinimo = anosExp;
+                }
+                else
+                {
+                    Console.WriteLine($"❌ UpdateJobField - Falha ao converter anosExperiencia: '{value}'");
+                }
                 break;
             case "formacaonecessaria":
             case "formacao":
@@ -671,8 +683,16 @@ public class JobService : IJobService
             case "previsaoinicio":
             case "previsaodeinicio":
             case "datainicio":
+                Console.WriteLine($"🔍 Parsing PrevisaoInicio - Value: '{value}', Type: {value?.GetType().Name}");
                 if (DateTime.TryParse(value?.ToString(), out var previsaoInicio))
+                {
                     job.PrevisaoInicio = previsaoInicio;
+                    Console.WriteLine($"✅ PrevisaoInicio parsed successfully: {previsaoInicio:dd/MM/yyyy}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Failed to parse PrevisaoInicio from: '{value}'");
+                }
                 break;
             case "sobretime":
                 job.SobreTime = value?.ToString();
@@ -687,35 +707,46 @@ public class JobService : IJobService
     {
         if (value == null) return null;
         
-        // Se for string, converte vírgulas em JSON array
-        if (value is string str)
+        try
         {
-            // Se já é JSON válido (começa com [), mantém
-            if (str.TrimStart().StartsWith("["))
-                return str;
+            // Se for string, converte vírgulas em JSON array
+            if (value is string str)
+            {
+                // Se já é JSON válido (começa com [), mantém
+                if (str.TrimStart().StartsWith("["))
+                    return str;
+                
+                // Converte string separada por vírgula em JSON array
+                // Ex: "C#, .NET, SQL" -> ["C#", ".NET", "SQL"]
+                var items = str.Split(',')
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToList();
+                
+                return items.Count > 0 ? JsonSerializer.Serialize(items) : null;
+            }
             
-            // Converte string separada por vírgula em JSON array
-            // Ex: "C#, .NET, SQL" -> ["C#", ".NET", "SQL"]
-            var items = str.Split(',')
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToList();
-            
-            return items.Count > 0 ? JsonSerializer.Serialize(items) : null;
+            // Se já for uma lista, serializa diretamente
+            return JsonSerializer.Serialize(value);
         }
-        
-        return JsonSerializer.Serialize(value);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ SerializeToJson - Error: {ex.Message} | Type: {value?.GetType().FullName}");
+            throw;
+        }
     }
 
     private static List<string>? DeserializeJsonList(string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return null;
+        
         try
         {
             return JsonSerializer.Deserialize<List<string>>(json);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"❌ DeserializeJsonList - Error: {ex.Message} | Input: {json}");
             return null;
         }
     }

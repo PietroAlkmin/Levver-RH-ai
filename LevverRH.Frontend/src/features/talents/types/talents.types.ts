@@ -45,6 +45,8 @@ export interface JobDTO {
   descricao: string;
   departamento?: string;
   localizacao?: string;
+  cidade?: string;
+  estado?: string;
   tipoContrato?: string;
   modeloTrabalho?: string;
   salarioMin?: number;
@@ -54,6 +56,7 @@ export interface JobDTO {
   numeroVagas: number;
   dataCriacao: string;
   totalCandidaturas: number;
+  iaCompletionPercentage?: number;
 }
 
 export interface JobDetailDTO {
@@ -150,7 +153,7 @@ export interface StartJobCreationDTO {
 
 export interface JobChatMessageDTO {
   jobId: string;
-  mensagem: string;
+  Mensagem: string; // Note: Backend espera com M maiúsculo
 }
 
 export interface JobChatResponseDTO {

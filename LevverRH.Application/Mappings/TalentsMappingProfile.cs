@@ -35,7 +35,13 @@ public class TalentsMappingProfile : Profile
             .ForMember(dest => dest.TipoContrato, opt => opt.MapFrom(src => src.TipoContrato.HasValue ? src.TipoContrato.Value.ToString() : null))
             .ForMember(dest => dest.ModeloTrabalho, opt => opt.MapFrom(src => src.ModeloTrabalho.HasValue ? src.ModeloTrabalho.Value.ToString() : null))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            .ForMember(dest => dest.TotalCandidaturas, opt => opt.MapFrom(src => src.Applications != null ? src.Applications.Count : 0));
+            .ForMember(dest => dest.TotalCandidaturas, opt => opt.MapFrom(src => src.Applications != null ? src.Applications.Count : 0))
+            // Ignorar campos JSON que serão convertidos manualmente por DeserializeJobJsonFields
+            .ForMember(dest => dest.ConhecimentosObrigatorios, opt => opt.Ignore())
+            .ForMember(dest => dest.ConhecimentosDesejaveis, opt => opt.Ignore())
+            .ForMember(dest => dest.CompetenciasImportantes, opt => opt.Ignore())
+            .ForMember(dest => dest.EtapasProcesso, opt => opt.Ignore())
+            .ForMember(dest => dest.TiposTesteEntrevista, opt => opt.Ignore());
 
         // Candidate mappings
         CreateMap<Candidate, CandidateDTO>()

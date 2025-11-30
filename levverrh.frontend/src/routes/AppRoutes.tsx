@@ -10,6 +10,7 @@ import { useAuthStore } from '../stores/authStore';
 const PainelDashboard = React.lazy(() => import('../features/painel/pages/PainelDashboard').then(module => ({ default: module.PainelDashboard })));
 const TalentsDashboard = React.lazy(() => import('../features/talents/pages/TalentsDashboard').then(module => ({ default: module.default })));
 const CreateJobWithAI = React.lazy(() => import('../features/talents/pages/CreateJobWithAI').then(module => ({ default: module.CreateJobWithAI })));
+const JobsList = React.lazy(() => import('../features/talents/pages/JobsList').then(module => ({ default: module.JobsList })));
 
 /**
  * Configuração de rotas da aplicação
@@ -95,6 +96,15 @@ color: '#363636',
         element={
           <ProtectedRoute>
             <CreateJobWithAI />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/talents/vagas"
+        element={
+          <ProtectedRoute>
+            <JobsList />
           </ProtectedRoute>
         }
       />

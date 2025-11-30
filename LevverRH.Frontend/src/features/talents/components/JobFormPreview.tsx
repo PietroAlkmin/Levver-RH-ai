@@ -24,6 +24,18 @@ export const JobFormPreview: React.FC<JobFormPreviewProps> = ({
     onFieldChange(fieldName, array);
   };
 
+  // Converte DateTime ISO para formato YYYY-MM-DD aceito por input[type="date"]
+  const formatDateForInput = (dateString?: string): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    } catch {
+      return '';
+    }
+  };
+
   return (
     <div className="job-form-container">
       <div className="job-form-header">
@@ -319,7 +331,7 @@ export const JobFormPreview: React.FC<JobFormPreviewProps> = ({
             <label className="job-form-label">Previsão de Início</label>
             <input
               type="date"
-              value={jobData.previsaoInicio || ''}
+              value={formatDateForInput(jobData.previsaoInicio)}
               onChange={(e) => handleInputChange('previsaoInicio', e.target.value)}
               className="job-form-input"
             />

@@ -16,18 +16,56 @@ export const CreateJobWithAI: React.FC = () => {
   const navigate = useNavigate();
   const { token, user, tenant } = useAuthStore();
   
-  const [jobId, setJobId] = useState<string>('');
-  const [conversationId, setConversationId] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [jobData, setJobData] = useState<Partial<JobDetailDTO>>({});
-  const [completionPercentage, setCompletionPercentage] = useState(0);
+  // Tentar recuperar estado do localStorage
+  const getInitialState = <T,>(key: string, defaultValue: T): T => {
+    try {
+      const stored = localStorage.getItem(`job-creation-${key}`);
+      return stored ? JSON.parse(stored) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  };
+  
+  const [jobId, setJobId] = useState<string>(() => getInitialState('jobId', ''));
+  const [conversationId, setConversationId] = useState<string>(() => getInitialState('conversationId', ''));
+  const [messages, setMessages] = useState<Message[]>(() => getInitialState('messages', []));
+  const [jobData, setJobData] = useState<Partial<JobDetailDTO>>(() => getInitialState('jobData', {}));
+  const [completionPercentage, setCompletionPercentage] = useState(() => getInitialState('completionPercentage', 0));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [hasInitialized, setHasInitialized] = useState(() => getInitialState('hasInitialized', false));
 
-  // Inicializar conversa ao montar o componente
+  // Salvar estado no localStorage quando mudar
   useEffect(() => {
-    initializeJobCreation();
-  }, []);
+    if (jobId) localStorage.setItem('job-creation-jobId', JSON.stringify(jobId));
+  }, [jobId]);
+
+  useEffect(() => {
+    if (conversationId) localStorage.setItem('job-creation-conversationId', JSON.stringify(conversationId));
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (messages.length > 0) localStorage.setItem('job-creation-messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    if (Object.keys(jobData).length > 0) localStorage.setItem('job-creation-jobData', JSON.stringify(jobData));
+  }, [jobData]);
+
+  useEffect(() => {
+    localStorage.setItem('job-creation-completionPercentage', JSON.stringify(completionPercentage));
+  }, [completionPercentage]);
+
+  useEffect(() => {
+    localStorage.setItem('job-creation-hasInitialized', JSON.stringify(hasInitialized));
+  }, [hasInitialized]);
+
+  // Inicializar conversa ao montar o componente (apenas uma vez)
+  useEffect(() => {
+    if (!hasInitialized) {
+      initializeJobCreation();
+    }
+  }, [hasInitialized]);
 
   const initializeJobCreation = async () => {
     try {
@@ -55,6 +93,7 @@ export const CreateJobWithAI: React.FC = () => {
       setJobId(response.jobId);
       setConversationId(response.conversationId);
       setCompletionPercentage(response.completionPercentage);
+      setHasInitialized(true); // Marcar como inicializado
       
       // Adicionar mensagem inicial da IA
       setMessages([{
@@ -100,7 +139,7 @@ export const CreateJobWithAI: React.FC = () => {
     try {
       const response = await talentsService.sendChatMessage({
         jobId,
-        mensagem: messageText
+        Mensagem: messageText
       });
 
       // Adicionar resposta da IA
@@ -175,6 +214,15 @@ export const CreateJobWithAI: React.FC = () => {
     setMessages(prev => [...prev, finalMessage]);
   };
 
+  const clearLocalStorage = () => {
+    localStorage.removeItem('job-creation-jobId');
+    localStorage.removeItem('job-creation-conversationId');
+    localStorage.removeItem('job-creation-messages');
+    localStorage.removeItem('job-creation-jobData');
+    localStorage.removeItem('job-creation-completionPercentage');
+    localStorage.removeItem('job-creation-hasInitialized');
+  };
+
   const handlePublish = async () => {
     if (!jobId) return;
 
@@ -185,6 +233,7 @@ export const CreateJobWithAI: React.FC = () => {
         publicarImediatamente: true
       });
 
+      clearLocalStorage(); // Limpar dados salvos
       navigate('/talents/jobs');
     } catch (err) {
       setError('Erro ao publicar vaga');
@@ -204,12 +253,20 @@ export const CreateJobWithAI: React.FC = () => {
         publicarImediatamente: false
       });
 
+      clearLocalStorage(); // Limpar dados salvos
       navigate('/talents/jobs');
     } catch (err) {
       setError('Erro ao salvar rascunho');
       console.error('Erro ao salvar:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStartNewJob = () => {
+    if (window.confirm('Tem certeza que deseja descartar esta vaga e começar uma nova?')) {
+      clearLocalStorage();
+      window.location.reload();
     }
   };
 
@@ -220,6 +277,25 @@ export const CreateJobWithAI: React.FC = () => {
           <div className="create-job-error">
             {error}
             <button onClick={() => setError('')} className="create-job-error-close">×</button>
+          </div>
+        )}
+
+        {/* Header com botão para nova vaga */}
+        {hasInitialized && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2 style={{ margin: 0 }}>Criar Nova Vaga com IA</h2>
+            <button 
+              onClick={handleStartNewJob}
+              style={{ 
+                padding: '0.5rem 1rem',
+                background: 'transparent',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Começar Nova Vaga
+            </button>
           </div>
         )}
 
