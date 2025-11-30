@@ -12,6 +12,14 @@ namespace LevverRH.Domain.Entities.Talents
         public string? LinkedinUrl { get; set; }
         public string? CurriculoArquivoUrl { get; set; }
         public string? CurriculoTextoExtraido { get; set; }
+        
+        // Dados estruturados extraídos do currículo (JSON)
+        public string? FormacaoAcademicaJson { get; set; } // [{ curso, instituicao, anoConclusao }]
+        public string? ExperienciasProfissionaisJson { get; set; } // [{ empresa, cargo, periodo, descricao }]
+        public string? CertificacoesJson { get; set; } // [{ nome, instituicao, ano }]
+        public string? IdiomasJson { get; set; } // [{ idioma, nivel }]
+        public string? CompetenciasJson { get; set; } // ["Liderança", "Comunicação"]
+        
         public decimal? ExperienciaAnos { get; set; }
         public SeniorityLevel? NivelSenioridade { get; set; }
         public string? HabilidadesJson { get; set; }

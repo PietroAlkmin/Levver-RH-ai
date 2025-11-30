@@ -1,9 +1,11 @@
 using AutoMapper;
 using LevverRH.Application.DTOs.Common;
+using LevverRH.Application.DTOs.Public;
 using LevverRH.Application.DTOs.Talents;
 using LevverRH.Application.Services.Interfaces.Talents;
 using LevverRH.Domain.Entities.Talents;
 using LevverRH.Domain.Enums.Talents;
+using LevverRH.Domain.Interfaces;
 using LevverRH.Domain.Interfaces.Talents;
 using System.Text.Json;
 
@@ -14,13 +16,23 @@ public class JobService : IJobService
     private readonly IJobRepository _jobRepository;
     private readonly IJobAIService _jobAIService;
     private readonly IChatMessageRepository _chatMessageRepository;
+    private readonly ITenantRepository _tenantRepository;
+    private readonly IWhiteLabelRepository _whiteLabelRepository;
     private readonly IMapper _mapper;
 
-    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IChatMessageRepository chatMessageRepository, IMapper mapper)
+    public JobService(
+        IJobRepository jobRepository, 
+        IJobAIService jobAIService, 
+        IChatMessageRepository chatMessageRepository,
+        ITenantRepository tenantRepository,
+        IWhiteLabelRepository whiteLabelRepository,
+        IMapper mapper)
     {
         _jobRepository = jobRepository;
         _jobAIService = jobAIService;
         _chatMessageRepository = chatMessageRepository;
+        _tenantRepository = tenantRepository;
+        _whiteLabelRepository = whiteLabelRepository;
         _mapper = mapper;
     }
 
@@ -220,6 +232,60 @@ public class JobService : IJobService
         catch (Exception ex)
         {
             return ResultDTO<bool>.FailureResult($"Erro ao excluir vaga: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Endpoints Públicos
+
+    public async Task<ResultDTO<PublicJobDetailDTO>> GetPublicJobDetailAsync(Guid jobId)
+    {
+        try
+        {
+            var job = await _jobRepository.GetByIdAsync(jobId);
+            
+            if (job == null)
+                return ResultDTO<PublicJobDetailDTO>.FailureResult("Vaga não encontrada");
+
+            // Verifica se a vaga está aberta para candidaturas
+            if (job.Status != JobStatus.Aberta)
+                return ResultDTO<PublicJobDetailDTO>.FailureResult("Esta vaga não está mais disponível para candidaturas");
+
+            // Buscar informações do tenant (white label)
+            var tenant = await _tenantRepository.GetByIdAsync(job.TenantId);
+            var whiteLabel = await _whiteLabelRepository.GetByTenantIdAsync(job.TenantId);
+
+            // Criar DTO público (sem dados sensíveis)
+            var publicJobDetail = new PublicJobDetailDTO
+            {
+                Id = job.Id,
+                Titulo = job.Titulo,
+                Descricao = job.Descricao,
+                Departamento = job.Departamento,
+                Localizacao = job.Localizacao,
+                Cidade = job.Cidade,
+                Estado = job.Estado,
+                TipoContrato = job.TipoContrato?.ToString(),
+                ModeloTrabalho = job.ModeloTrabalho?.ToString(),
+                SalarioMin = job.SalarioMin,
+                SalarioMax = job.SalarioMax,
+                Beneficios = job.Beneficios,
+                AnosExperienciaMinimo = job.AnosExperienciaMinimo,
+                FormacaoNecessaria = job.FormacaoNecessaria,
+                Responsabilidades = job.Responsabilidades,
+                SobreTime = job.SobreTime,
+                Diferenciais = job.Diferenciais,
+                DataCriacao = job.DataCriacao,
+                NomeEmpresa = whiteLabel?.SystemName ?? tenant?.Nome ?? "Empresa",
+                LogoEmpresa = whiteLabel?.LogoUrl
+            };
+
+            return ResultDTO<PublicJobDetailDTO>.SuccessResult(publicJobDetail);
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<PublicJobDetailDTO>.FailureResult($"Erro ao buscar vaga pública: {ex.Message}");
         }
     }
 
@@ -436,6 +502,9 @@ public class JobService : IJobService
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"❌ ProcessAIChatMessageAsync - EXCEPTION: {ex.Message}");
+            Console.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
+            Console.WriteLine($"❌ Inner Exception: {ex.InnerException?.Message}");
             return ResultDTO<JobChatResponseDTO>.FailureResult($"Erro ao processar mensagem: {ex.Message}");
         }
     }
@@ -624,11 +693,20 @@ public class JobService : IJobService
                 if (Enum.TryParse<WorkModel>(value?.ToString(), true, out var modeloTrabalho))
                     job.ModeloTrabalho = modeloTrabalho;
                 break;
-            case "anosExperienciaminimo":
+            case "anosexperienciaminimo":
             case "anosdeexperienciaminimo":
             case "anosdeexperiencia":
+            case "experiencia":
+                Console.WriteLine($"🎯 UpdateJobField - Tentando converter anosExperiencia: '{value}'");
                 if (int.TryParse(value?.ToString(), out var anosExp))
+                {
+                    Console.WriteLine($"✅ UpdateJobField - anosExperiencia definido para: {anosExp}");
                     job.AnosExperienciaMinimo = anosExp;
+                }
+                else
+                {
+                    Console.WriteLine($"❌ UpdateJobField - Falha ao converter anosExperiencia: '{value}'");
+                }
                 break;
             case "formacaonecessaria":
             case "formacao":
@@ -671,8 +749,16 @@ public class JobService : IJobService
             case "previsaoinicio":
             case "previsaodeinicio":
             case "datainicio":
+                Console.WriteLine($"🔍 Parsing PrevisaoInicio - Value: '{value}', Type: {value?.GetType().Name}");
                 if (DateTime.TryParse(value?.ToString(), out var previsaoInicio))
+                {
                     job.PrevisaoInicio = previsaoInicio;
+                    Console.WriteLine($"✅ PrevisaoInicio parsed successfully: {previsaoInicio:dd/MM/yyyy}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Failed to parse PrevisaoInicio from: '{value}'");
+                }
                 break;
             case "sobretime":
                 job.SobreTime = value?.ToString();
@@ -687,35 +773,46 @@ public class JobService : IJobService
     {
         if (value == null) return null;
         
-        // Se for string, converte vírgulas em JSON array
-        if (value is string str)
+        try
         {
-            // Se já é JSON válido (começa com [), mantém
-            if (str.TrimStart().StartsWith("["))
-                return str;
+            // Se for string, converte vírgulas em JSON array
+            if (value is string str)
+            {
+                // Se já é JSON válido (começa com [), mantém
+                if (str.TrimStart().StartsWith("["))
+                    return str;
+                
+                // Converte string separada por vírgula em JSON array
+                // Ex: "C#, .NET, SQL" -> ["C#", ".NET", "SQL"]
+                var items = str.Split(',')
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToList();
+                
+                return items.Count > 0 ? JsonSerializer.Serialize(items) : null;
+            }
             
-            // Converte string separada por vírgula em JSON array
-            // Ex: "C#, .NET, SQL" -> ["C#", ".NET", "SQL"]
-            var items = str.Split(',')
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToList();
-            
-            return items.Count > 0 ? JsonSerializer.Serialize(items) : null;
+            // Se já for uma lista, serializa diretamente
+            return JsonSerializer.Serialize(value);
         }
-        
-        return JsonSerializer.Serialize(value);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ SerializeToJson - Error: {ex.Message} | Type: {value?.GetType().FullName}");
+            throw;
+        }
     }
 
     private static List<string>? DeserializeJsonList(string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return null;
+        
         try
         {
             return JsonSerializer.Deserialize<List<string>>(json);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"❌ DeserializeJsonList - Error: {ex.Message} | Input: {json}");
             return null;
         }
     }

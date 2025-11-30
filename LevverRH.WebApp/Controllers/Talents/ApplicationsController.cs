@@ -69,5 +69,17 @@ namespace LevverRH.WebApp.Controllers.Talents
             
             return Ok(result);
         }
+
+        [HttpPost("{id}/analyze")]
+        public async Task<IActionResult> AnalyzeWithAI(Guid id)
+        {
+            var tenantId = GetTenantId();
+            var result = await _applicationService.AnalyzeCandidateWithAIAsync(id, tenantId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
     }
 }

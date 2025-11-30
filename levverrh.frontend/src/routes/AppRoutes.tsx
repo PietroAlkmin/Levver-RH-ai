@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Login } from '../pages/Auth/Login';
 import { RegisterTenant } from '../pages/Auth/RegisterTenant';
+import { JobApplication } from '../pages/Public/JobApplication';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuthStore } from '../stores/authStore';
 
@@ -10,6 +11,8 @@ import { useAuthStore } from '../stores/authStore';
 const PainelDashboard = React.lazy(() => import('../features/painel/pages/PainelDashboard').then(module => ({ default: module.PainelDashboard })));
 const TalentsDashboard = React.lazy(() => import('../features/talents/pages/TalentsDashboard').then(module => ({ default: module.default })));
 const CreateJobWithAI = React.lazy(() => import('../features/talents/pages/CreateJobWithAI').then(module => ({ default: module.CreateJobWithAI })));
+const JobsList = React.lazy(() => import('../features/talents/pages/JobsList').then(module => ({ default: module.JobsList })));
+const JobDetailPage = React.lazy(() => import('../features/talents/pages/JobDetailPage').then(module => ({ default: module.JobDetailPage })));
 
 /**
  * Configuração de rotas da aplicação
@@ -68,6 +71,7 @@ color: '#363636',
           {/* Rotas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/register-tenant" element={<RegisterTenant />} />
+          <Route path="/candidatura/:jobId" element={<JobApplication />} />
           {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
       {/* Rotas protegidas */}
@@ -95,6 +99,24 @@ color: '#363636',
         element={
           <ProtectedRoute>
             <CreateJobWithAI />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/talents/vagas"
+        element={
+          <ProtectedRoute>
+            <JobsList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/talents/vagas/:jobId"
+        element={
+          <ProtectedRoute>
+            <JobDetailPage />
           </ProtectedRoute>
         }
       />

@@ -58,7 +58,7 @@ namespace LevverRH.Application.Services.Implementations.Talents
             try
             {
                 // Verificar se já existe candidato com o mesmo email
-                var existingCandidate = await _candidateRepository.GetByEmailAsync(tenantId, createDto.Email);
+                var existingCandidate = await _candidateRepository.GetByEmailAsync(createDto.Email, tenantId);
                 if (existingCandidate != null)
                     return ResultDTO<CandidateDTO>.FailureResult("Já existe um candidato cadastrado com este e-mail");
 

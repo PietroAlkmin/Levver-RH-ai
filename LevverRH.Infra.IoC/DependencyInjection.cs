@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<ICandidateService, CandidateService>();
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
 
         // AI Services (OpenAI)
         services.AddSingleton<IChatClient>(sp =>
@@ -81,6 +82,8 @@ public static class DependencyInjection
             return new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient();
         });
         services.AddScoped<IJobAIService, JobAIService>();
+        services.AddScoped<IPdfExtractor, PdfExtractor>();
+        services.AddScoped<ICandidateAnalyzer, CandidateAnalyzer>();
 
         return services;
     }

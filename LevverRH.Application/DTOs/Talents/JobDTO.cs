@@ -14,6 +14,8 @@ public class JobDTO
     public string Descricao { get; set; } = string.Empty;
     public string? Departamento { get; set; }
     public string? Localizacao { get; set; }
+    public string? Cidade { get; set; }
+    public string? Estado { get; set; }
     public string? TipoContrato { get; set; }
     public string? ModeloTrabalho { get; set; }
     public decimal? SalarioMin { get; set; }
