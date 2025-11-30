@@ -121,14 +121,36 @@ namespace LevverRH.WebApp.Controllers.Talents
         [HttpPost("ai/start")]
         public async Task<IActionResult> StartAICreation([FromBody] StartJobCreationDTO dto)
         {
-            var tenantId = GetTenantId();
-            var userId = GetUserId();
-            var result = await _jobService.StartJobCreationWithAIAsync(dto, tenantId, userId);
-            
-            if (!result.Success)
-                return BadRequest(result);
-            
-            return Ok(result);
+            try
+            {
+                Console.WriteLine("🔍 StartAICreation - Iniciando...");
+                Console.WriteLine($"🔍 User.Identity.IsAuthenticated: {User.Identity?.IsAuthenticated}");
+                Console.WriteLine($"🔍 User.Claims count: {User.Claims.Count()}");
+                
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"🔍 Claim: {claim.Type} = {claim.Value}");
+                }
+                
+                var tenantId = GetTenantId();
+                var userId = GetUserId();
+                
+                Console.WriteLine($"🔍 TenantId: {tenantId}");
+                Console.WriteLine($"🔍 UserId: {userId}");
+                
+                var result = await _jobService.StartJobCreationWithAIAsync(dto, tenantId, userId);
+                
+                if (!result.Success)
+                    return BadRequest(result);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Erro em StartAICreation: {ex.Message}");
+                Console.WriteLine($"❌ Stack: {ex.StackTrace}");
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         /// <summary>
@@ -161,6 +183,24 @@ namespace LevverRH.WebApp.Controllers.Talents
 
             var tenantId = GetTenantId();
             var result = await _jobService.ProcessAIChatMessageAsync(dto, tenantId);
+            
+            if (!result.Success)
+                return BadRequest(result);
+            
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Atualiza campo manualmente e notifica IA sobre a mudança
+        /// </summary>
+        [HttpPost("ai/manual-update")]
+        public async Task<IActionResult> ManualUpdateWithAIContext([FromBody] ManualUpdateJobFieldDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var tenantId = GetTenantId();
+            var result = await _jobService.ManualUpdateWithAIContextAsync(dto, tenantId);
             
             if (!result.Success)
                 return BadRequest(result);

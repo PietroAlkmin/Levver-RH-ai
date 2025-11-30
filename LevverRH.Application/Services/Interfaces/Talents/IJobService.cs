@@ -34,6 +34,12 @@ public interface IJobService
     Task<ResultDTO<JobChatResponseDTO>> ProcessAIChatMessageAsync(JobChatMessageDTO dto, Guid tenantId);
 
     /// <summary>
+    /// Atualiza campo manualmente e notifica IA sobre a mudança no contexto da conversa
+    /// A IA reconhece a alteração e pode ajustar suas próximas perguntas
+    /// </summary>
+    Task<ResultDTO<JobChatResponseDTO>> ManualUpdateWithAIContextAsync(ManualUpdateJobFieldDTO dto, Guid tenantId);
+
+    /// <summary>
     /// Finaliza criação de vaga e opcionalmente publica
     /// </summary>
     Task<ResultDTO<JobDetailDTO>> CompleteJobCreationAsync(CompleteJobCreationDTO dto, Guid tenantId);

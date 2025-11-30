@@ -9,6 +9,7 @@ import { useAuthStore } from '../stores/authStore';
 // Lazy loading de páginas para performance
 const PainelDashboard = React.lazy(() => import('../features/painel/pages/PainelDashboard').then(module => ({ default: module.PainelDashboard })));
 const TalentsDashboard = React.lazy(() => import('../features/talents/pages/TalentsDashboard').then(module => ({ default: module.default })));
+const CreateJobWithAI = React.lazy(() => import('../features/talents/pages/CreateJobWithAI').then(module => ({ default: module.CreateJobWithAI })));
 
 /**
  * Configuração de rotas da aplicação
@@ -85,6 +86,15 @@ color: '#363636',
         element={
           <ProtectedRoute>
             <TalentsDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/talents/jobs/new"
+        element={
+          <ProtectedRoute>
+            <CreateJobWithAI />
           </ProtectedRoute>
         }
       />
