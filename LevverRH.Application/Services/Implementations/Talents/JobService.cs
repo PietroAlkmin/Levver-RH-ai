@@ -13,12 +13,14 @@ public class JobService : IJobService
 {
     private readonly IJobRepository _jobRepository;
     private readonly IJobAIService _jobAIService;
+    private readonly IChatMessageRepository _chatMessageRepository;
     private readonly IMapper _mapper;
 
-    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IMapper mapper)
+    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IChatMessageRepository chatMessageRepository, IMapper mapper)
     {
         _jobRepository = jobRepository;
         _jobAIService = jobAIService;
+        _chatMessageRepository = chatMessageRepository;
         _mapper = mapper;
     }
 
@@ -339,8 +341,30 @@ public class JobService : IJobService
             if (job.Status != JobStatus.Rascunho)
                 return ResultDTO<JobChatResponseDTO>.FailureResult("Esta vaga já foi finalizada");
 
-            // TODO: Recuperar histórico da conversa do banco (TALENTS.chat_messages)
-            var conversationHistory = new List<ChatMessageItem>();
+            // Recuperar histórico da conversa do banco
+            var chatHistory = await _chatMessageRepository.GetByConversationIdAsync(job.ConversationId!.Value);
+            var conversationHistory = chatHistory.Select(ch => new ChatMessageItem
+            {
+                Role = ch.Role,
+                Content = ch.Conteudo,
+                Timestamp = ch.Timestamp
+            }).ToList();
+
+            // Salvar mensagem do usuário no banco
+            var userMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "user",
+                Conteudo = dto.Mensagem,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null,
+                ModeloUtilizado = null
+            };
+            await _chatMessageRepository.AddAsync(userMessage);
 
             // Processar resposta com IA
             var aiResult = await _jobAIService.ProcessUserResponseAsync(job, conversationHistory, dto.Mensagem);
@@ -356,7 +380,21 @@ public class JobService : IJobService
 
             await _jobRepository.UpdateAsync(job);
 
-            // TODO: Salvar mensagens no histórico (TALENTS.chat_messages)
+            // Salvar resposta da IA no banco
+            var assistantMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "assistant",
+                Conteudo = aiResult.AIResponse,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null, // TODO: Extrair do response do OpenAI quando disponível
+                ModeloUtilizado = "gpt-4o-mini"
+            };
+            await _chatMessageRepository.AddAsync(assistantMessage);
 
             var jobDetail = _mapper.Map<JobDetailDTO>(job);
             DeserializeJobJsonFields(job, jobDetail);
