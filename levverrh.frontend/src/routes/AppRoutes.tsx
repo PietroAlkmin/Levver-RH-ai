@@ -12,6 +12,7 @@ const PainelDashboard = React.lazy(() => import('../features/painel/pages/Painel
 const TalentsDashboard = React.lazy(() => import('../features/talents/pages/TalentsDashboard').then(module => ({ default: module.default })));
 const CreateJobWithAI = React.lazy(() => import('../features/talents/pages/CreateJobWithAI').then(module => ({ default: module.CreateJobWithAI })));
 const JobsList = React.lazy(() => import('../features/talents/pages/JobsList').then(module => ({ default: module.JobsList })));
+const JobDetailPage = React.lazy(() => import('../features/talents/pages/JobDetailPage').then(module => ({ default: module.JobDetailPage })));
 
 /**
  * Configuração de rotas da aplicação
@@ -107,6 +108,15 @@ color: '#363636',
         element={
           <ProtectedRoute>
             <JobsList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/talents/vagas/:jobId"
+        element={
+          <ProtectedRoute>
+            <JobDetailPage />
           </ProtectedRoute>
         }
       />

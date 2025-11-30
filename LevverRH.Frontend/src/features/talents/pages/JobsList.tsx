@@ -41,7 +41,7 @@ export const JobsList: React.FC = () => {
   };
 
   const handleViewJob = (jobId: string) => {
-    navigate(`/talents/jobs/${jobId}`);
+    navigate(`/talents/vagas/${jobId}`);
   };
 
   // Função para determinar se a vaga está completa (>= 80%)
@@ -240,7 +240,12 @@ export const JobsList: React.FC = () => {
       ) : (
         <div className="jobs-grid">
           {filteredJobs.map((job) => (
-            <div key={job.id} className="job-card">
+            <div 
+              key={job.id} 
+              className="job-card"
+              onClick={() => isJobComplete(job) && handleViewJob(job.id)}
+              style={{ cursor: isJobComplete(job) ? 'pointer' : 'default' }}
+            >
               {/* Header do Card */}
               <div className="job-card-header">
                 <div className="job-icon">
@@ -293,7 +298,10 @@ export const JobsList: React.FC = () => {
               <div className="job-card-actions">
                 <button 
                   className="btn-view-job"
-                  onClick={() => handleJobAction(job)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleJobAction(job);
+                  }}
                 >
                   {getJobButtonText(job)}
                 </button>

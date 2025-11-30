@@ -73,6 +73,26 @@ public class FileStorageService : IFileStorageService
         }
     }
 
+    public async Task<byte[]> DownloadFileAsync(string fileUrl)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(fileUrl))
+                throw new ArgumentException("URL do arquivo não pode ser vazia");
+
+            var filePath = Path.Combine(_uploadsBasePath, fileUrl);
+
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"Arquivo não encontrado: {fileUrl}");
+
+            return await File.ReadAllBytesAsync(filePath);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Erro ao baixar arquivo {fileUrl}: {ex.Message}", ex);
+        }
+    }
+
     public string? ValidateFile(string fileName, long fileSize)
     {
         // Valida tamanho

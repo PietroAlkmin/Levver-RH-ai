@@ -99,7 +99,17 @@ export const talentsService = {
    * Obtém detalhes completos de uma vaga
    */
   getJobDetail: async (jobId: string): Promise<JobDetailDTO> => {
-    const response = await apiClient.get<ApiResponse<JobDetailDTO>>(`/talents/jobs/${jobId}/detail`);
+    const response = await apiClient.get<ApiResponse<JobDetailDTO>>(`/talents/jobs/${jobId}`);
     return response.data.data!;
   },
+
+  // ========== ANÁLISE DE CANDIDATOS COM IA ==========
+  
+  /**
+   * Analisa currículo do candidato com IA comparando com requisitos da vaga
+   */
+  analyzeCandidateWithAI: async (applicationId: string): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>(`/talents/applications/${applicationId}/analyze`);
+    return response.data.data!;
+  }
 };

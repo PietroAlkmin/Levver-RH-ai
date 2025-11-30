@@ -27,6 +27,8 @@ namespace LevverRH.Application.Services.Implementations.Talents
         private readonly IUserRepository _userRepository;
         private readonly ITenantRepository _tenantRepository;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IPdfExtractor _pdfExtractor;
+        private readonly ICandidateAnalyzer _candidateAnalyzer;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
 
@@ -37,6 +39,8 @@ namespace LevverRH.Application.Services.Implementations.Talents
             IUserRepository userRepository,
             ITenantRepository tenantRepository,
             IFileStorageService fileStorageService,
+            IPdfExtractor pdfExtractor,
+            ICandidateAnalyzer candidateAnalyzer,
             IMapper mapper,
             IConfiguration configuration)
         {
@@ -46,6 +50,8 @@ namespace LevverRH.Application.Services.Implementations.Talents
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
             _fileStorageService = fileStorageService;
+            _pdfExtractor = pdfExtractor;
+            _candidateAnalyzer = candidateAnalyzer;
             _mapper = mapper;
             _configuration = configuration;
             _mapper = mapper;
@@ -339,6 +345,125 @@ namespace LevverRH.Application.Services.Implementations.Talents
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<ResultDTO<AnalyzeCandidateResponseDTO>> AnalyzeCandidateWithAIAsync(Guid applicationId, Guid tenantId)
+        {
+            try
+            {
+                // 1. Buscar a candidatura
+                var application = await _applicationRepository.GetByIdAsync(applicationId);
+                if (application == null || application.TenantId != tenantId)
+                {
+                    return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult("Candidatura não encontrada");
+                }
+
+                // 2. Buscar candidato e currículo
+                var candidate = await _candidateRepository.GetByIdAsync(application.CandidateId);
+                if (candidate == null)
+                {
+                    return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult("Candidato não encontrado");
+                }
+
+                if (string.IsNullOrEmpty(candidate.CurriculoArquivoUrl))
+                {
+                    return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult("Currículo não encontrado para este candidato");
+                }
+
+                // 3. Buscar informações da vaga
+                var job = await _jobRepository.GetByIdAsync(application.JobId);
+                if (job == null)
+                {
+                    return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult("Vaga não encontrada");
+                }
+
+                // 4. Baixar currículo do Azure Blob e extrair texto
+                var storageService = _fileStorageService as FileStorageService;
+                if (storageService == null)
+                {
+                    return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult("Serviço de storage indisponível");
+                }
+
+                byte[] pdfBytes = await storageService.DownloadFileAsync(candidate.CurriculoArquivoUrl);
+                string resumeText = await _pdfExtractor.ExtractTextAsync(pdfBytes);
+
+                // 5. Montar requisitos da vaga
+                var jobRequirements = BuildJobRequirements(job);
+
+                // 6. Analisar com IA
+                var analysisResult = await _candidateAnalyzer.AnalyzeAsync(resumeText, jobRequirements);
+
+                // 7. Salvar resultados na candidatura
+                application.ScoreGeral = analysisResult.Score;
+                application.JustificativaIA = analysisResult.Summary;
+                application.DataCalculoScore = DateTime.UtcNow;
+                
+                await _applicationRepository.UpdateAsync(application);
+
+                // 8. Retornar resposta
+                var response = new AnalyzeCandidateResponseDTO
+                {
+                    ScoreGeral = analysisResult.Score,
+                    Justificativa = analysisResult.Summary,
+                    TokensUsed = analysisResult.TokensUsed,
+                    EstimatedCost = analysisResult.EstimatedCost
+                };
+
+                return ResultDTO<AnalyzeCandidateResponseDTO>.SuccessResult(response, "Análise concluída com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return ResultDTO<AnalyzeCandidateResponseDTO>.FailureResult($"Erro ao analisar candidato: {ex.Message}");
+            }
+        }
+
+        private string BuildJobRequirements(Job job)
+        {
+            var requirements = new StringBuilder();
+            requirements.AppendLine($"TÍTULO DA VAGA: {job.Titulo}");
+            requirements.AppendLine($"DESCRIÇÃO: {job.Descricao}");
+            
+            if (!string.IsNullOrEmpty(job.Responsabilidades))
+            {
+                requirements.AppendLine($"RESPONSABILIDADES: {job.Responsabilidades}");
+            }
+
+            if (!string.IsNullOrEmpty(job.ConhecimentosObrigatorios))
+            {
+                requirements.AppendLine($"CONHECIMENTOS OBRIGATÓRIOS: {job.ConhecimentosObrigatorios}");
+            }
+
+            if (!string.IsNullOrEmpty(job.ConhecimentosDesejaveis))
+            {
+                requirements.AppendLine($"CONHECIMENTOS DESEJÁVEIS: {job.ConhecimentosDesejaveis}");
+            }
+
+            if (!string.IsNullOrEmpty(job.CompetenciasImportantes))
+            {
+                requirements.AppendLine($"COMPETÊNCIAS: {job.CompetenciasImportantes}");
+            }
+
+            if (!string.IsNullOrEmpty(job.FormacaoNecessaria))
+            {
+                requirements.AppendLine($"FORMAÇÃO: {job.FormacaoNecessaria}");
+            }
+
+            if (job.AnosExperienciaMinimo.HasValue)
+            {
+                requirements.AppendLine($"EXPERIÊNCIA MÍNIMA: {job.AnosExperienciaMinimo} anos");
+            }
+            
+            if (!string.IsNullOrEmpty(job.Beneficios))
+            {
+                requirements.AppendLine($"BENEFÍCIOS: {job.Beneficios}");
+            }
+
+            if (job.SalarioMin.HasValue || job.SalarioMax.HasValue)
+            {
+                requirements.AppendLine($"FAIXA SALARIAL: R$ {job.SalarioMin ?? 0:N2} - R$ {job.SalarioMax ?? 0:N2}");
+            }
+
+            return requirements.ToString();
         }
     }
 }

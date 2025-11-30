@@ -21,5 +21,10 @@ namespace LevverRH.Application.Services.Interfaces.Talents
             Stream? curriculoStream, 
             string? curriculoFileName, 
             string? curriculoContentType);
+        
+        /// <summary>
+        /// Analisa currículo do candidato com IA comparando com requisitos da vaga
+        /// </summary>
+        Task<ResultDTO<AnalyzeCandidateResponseDTO>> AnalyzeCandidateWithAIAsync(Guid applicationId, Guid tenantId);
     }
 }

@@ -82,6 +82,8 @@ public static class DependencyInjection
             return new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient();
         });
         services.AddScoped<IJobAIService, JobAIService>();
+        services.AddScoped<IPdfExtractor, PdfExtractor>();
+        services.AddScoped<ICandidateAnalyzer, CandidateAnalyzer>();
 
         return services;
     }
