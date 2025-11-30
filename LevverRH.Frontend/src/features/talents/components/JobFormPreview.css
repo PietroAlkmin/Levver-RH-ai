@@ -1,0 +1,114 @@
+.job-form-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--background-color);
+  overflow: hidden;
+}
+
+/* Header */
+.job-form-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.job-form-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+/* Content */
+.job-form-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  max-width: 100%;
+  min-height: 0;
+}
+
+/* Section */
+.job-form-section {
+  margin-bottom: 2rem;
+}
+
+.job-form-section:last-child {
+  margin-bottom: 0;
+}
+
+.job-form-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Field */
+.job-form-field {
+  margin-bottom: 1rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.job-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.job-form-required {
+  color: var(--danger-color, #ef4444);
+  margin-left: 0.25rem;
+}
+
+/* Input */
+.job-form-input,
+.job-form-select,
+.job-form-textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.job-form-input:focus,
+.job-form-select:focus,
+.job-form-textarea:focus {
+  border-color: var(--primary-color);
+}
+
+.job-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+/* Row */
+.job-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Placeholder */
+.job-form-input::placeholder,
+.job-form-textarea::placeholder {
+  color: var(--text-tertiary);
+}

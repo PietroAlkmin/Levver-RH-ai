@@ -1,5 +1,15 @@
 import apiClient from '../../../services/api';
-import { DashboardStatsDTO, JobDTO, ApplicationDTO } from '../types/talents.types';
+import { 
+  DashboardStatsDTO, 
+  JobDTO, 
+  ApplicationDTO,
+  StartJobCreationDTO,
+  JobChatMessageDTO,
+  JobChatResponseDTO,
+  ManualUpdateJobFieldDTO,
+  CompleteJobCreationDTO,
+  JobDetailDTO
+} from '../types/talents.types';
 import { ApiResponse } from '../../../types/api.types';
 
 /**
@@ -46,5 +56,50 @@ export const talentsService = {
   getApplicationsByJob: async (jobId: string): Promise<ApplicationDTO[]> => {
     const response = await apiClient.get<ApiResponse<ApplicationDTO[]>>(`/talents/applications/job/${jobId}`);
     return response.data.data || [];
+  },
+
+  // ========== CRIAÇÃO DE VAGA COM IA ==========
+  
+  /**
+   * Inicia criação de vaga assistida por IA
+   * Cria uma vaga em rascunho e retorna a primeira pergunta da IA
+   */
+  startJobWithAI: async (dto: StartJobCreationDTO): Promise<JobChatResponseDTO> => {
+    const response = await apiClient.post<ApiResponse<JobChatResponseDTO>>('/talents/jobs/ai/start', dto);
+    return response.data.data!;
+  },
+
+  /**
+   * Envia mensagem no chat de criação de vaga
+   * A IA processa a mensagem e atualiza a vaga
+   */
+  sendChatMessage: async (dto: JobChatMessageDTO): Promise<JobChatResponseDTO> => {
+    const response = await apiClient.post<ApiResponse<JobChatResponseDTO>>('/talents/jobs/ai/chat', dto);
+    return response.data.data!;
+  },
+
+  /**
+   * Atualiza campo manualmente e notifica IA sobre a mudança
+   * A IA reconhece a alteração e pode ajustar suas próximas perguntas
+   */
+  manualUpdateField: async (dto: ManualUpdateJobFieldDTO): Promise<JobChatResponseDTO> => {
+    const response = await apiClient.post<ApiResponse<JobChatResponseDTO>>('/talents/jobs/ai/manual-update', dto);
+    return response.data.data!;
+  },
+
+  /**
+   * Finaliza criação de vaga e opcionalmente publica
+   */
+  completeJobCreation: async (dto: CompleteJobCreationDTO): Promise<JobDetailDTO> => {
+    const response = await apiClient.post<ApiResponse<JobDetailDTO>>('/talents/jobs/ai/complete', dto);
+    return response.data.data!;
+  },
+
+  /**
+   * Obtém detalhes completos de uma vaga
+   */
+  getJobDetail: async (jobId: string): Promise<JobDetailDTO> => {
+    const response = await apiClient.get<ApiResponse<JobDetailDTO>>(`/talents/jobs/${jobId}/detail`);
+    return response.data.data!;
   },
 };

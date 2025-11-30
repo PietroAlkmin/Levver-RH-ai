@@ -28,7 +28,7 @@ export const Sidebar: React.FC = () => {
     if (location.pathname.startsWith('/talents')) {
       return [
         { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/talents' },
-        { icon: <Plus size={20} />, label: 'Nova vaga', path: '/talents/nova-vaga' },
+        { icon: <Plus size={20} />, label: 'Nova vaga', path: '/talents/jobs/new' },
         { icon: <List size={20} />, label: 'Lista de vagas', path: '/talents/vagas' }
       ];
     }

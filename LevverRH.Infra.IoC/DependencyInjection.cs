@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IJobRepository, JobRepository>();
         services.AddScoped<ICandidateRepository, CandidateRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 
         // AutoMapper
         services.AddAutoMapper(typeof(AuthMappingProfile));

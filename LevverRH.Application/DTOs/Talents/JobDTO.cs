@@ -232,4 +232,32 @@ public class CompleteJobCreationDTO
     public bool PublicarImediatamente { get; set; } = false;
 }
 
+/// <summary>
+/// DTO para atualização manual de campo com notificação de IA
+/// </summary>
+public class ManualUpdateJobFieldDTO
+{
+    /// <summary>
+    /// ID da vaga sendo editada
+    /// </summary>
+    public Guid JobId { get; set; }
+
+    /// <summary>
+    /// Nome do campo que foi alterado manualmente
+    /// Ex: "Titulo", "SalarioMin", "Descricao"
+    /// </summary>
+    public string FieldName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Novo valor do campo (serializado como string)
+    /// </summary>
+    public string? FieldValue { get; set; }
+
+    /// <summary>
+    /// Mensagem opcional do usuário explicando a alteração
+    /// Ex: "Prefiro aumentar o salário para 8000"
+    /// </summary>
+    public string? UserMessage { get; set; }
+}
+
 #endregion

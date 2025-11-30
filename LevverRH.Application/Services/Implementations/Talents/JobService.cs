@@ -13,12 +13,14 @@ public class JobService : IJobService
 {
     private readonly IJobRepository _jobRepository;
     private readonly IJobAIService _jobAIService;
+    private readonly IChatMessageRepository _chatMessageRepository;
     private readonly IMapper _mapper;
 
-    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IMapper mapper)
+    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IChatMessageRepository chatMessageRepository, IMapper mapper)
     {
         _jobRepository = jobRepository;
         _jobAIService = jobAIService;
+        _chatMessageRepository = chatMessageRepository;
         _mapper = mapper;
     }
 
@@ -308,6 +310,22 @@ public class JobService : IJobService
             // Obter primeira pergunta da IA
             var firstQuestion = await _jobAIService.GetFirstQuestionAsync(dto.MensagemInicial);
 
+            // Salvar a primeira pergunta da IA no histórico
+            var assistantMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = userId,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "assistant",
+                Conteudo = firstQuestion,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null,
+                ModeloUtilizado = "gpt-4o-mini"
+            };
+            await _chatMessageRepository.AddAsync(assistantMessage);
+
             var response = new JobChatResponseDTO
             {
                 JobId = job.Id,
@@ -339,15 +357,43 @@ public class JobService : IJobService
             if (job.Status != JobStatus.Rascunho)
                 return ResultDTO<JobChatResponseDTO>.FailureResult("Esta vaga já foi finalizada");
 
-            // TODO: Recuperar histórico da conversa do banco (TALENTS.chat_messages)
-            var conversationHistory = new List<ChatMessageItem>();
+            // Recuperar histórico da conversa do banco
+            var chatHistory = await _chatMessageRepository.GetByConversationIdAsync(job.ConversationId!.Value);
+            var conversationHistory = chatHistory.Select(ch => new ChatMessageItem
+            {
+                Role = ch.Role,
+                Content = ch.Conteudo,
+                Timestamp = ch.Timestamp
+            }).ToList();
+
+            // Salvar mensagem do usuário no banco
+            var userMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "user",
+                Conteudo = dto.Mensagem,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null,
+                ModeloUtilizado = null
+            };
+            await _chatMessageRepository.AddAsync(userMessage);
 
             // Processar resposta com IA
             var aiResult = await _jobAIService.ProcessUserResponseAsync(job, conversationHistory, dto.Mensagem);
 
+            Console.WriteLine($"🤖 IA Response: {aiResult.AIResponse}");
+            Console.WriteLine($"📊 Completion: {aiResult.CompletionPercentage}%");
+            Console.WriteLine($"✅ Is Complete: {aiResult.IsComplete}");
+            Console.WriteLine($"🔑 Extracted Fields Count: {aiResult.ExtractedFields.Count}");
+
             // Atualizar campos extraídos
             foreach (var field in aiResult.ExtractedFields)
             {
+                Console.WriteLine($"📝 Updating field '{field.Key}' = '{field.Value}'");
                 UpdateJobField(job, field.Key, field.Value);
             }
 
@@ -356,7 +402,21 @@ public class JobService : IJobService
 
             await _jobRepository.UpdateAsync(job);
 
-            // TODO: Salvar mensagens no histórico (TALENTS.chat_messages)
+            // Salvar resposta da IA no banco
+            var assistantMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "assistant",
+                Conteudo = aiResult.AIResponse,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null, // TODO: Extrair do response do OpenAI quando disponível
+                ModeloUtilizado = "gpt-4o-mini"
+            };
+            await _chatMessageRepository.AddAsync(assistantMessage);
 
             var jobDetail = _mapper.Map<JobDetailDTO>(job);
             DeserializeJobJsonFields(job, jobDetail);
@@ -377,6 +437,96 @@ public class JobService : IJobService
         catch (Exception ex)
         {
             return ResultDTO<JobChatResponseDTO>.FailureResult($"Erro ao processar mensagem: {ex.Message}");
+        }
+    }
+
+    public async Task<ResultDTO<JobChatResponseDTO>> ManualUpdateWithAIContextAsync(ManualUpdateJobFieldDTO dto, Guid tenantId)
+    {
+        try
+        {
+            var job = await _jobRepository.GetByIdAndTenantAsync(dto.JobId, tenantId);
+            
+            if (job == null)
+                return ResultDTO<JobChatResponseDTO>.FailureResult("Vaga não encontrada");
+
+            if (job.Status != JobStatus.Rascunho)
+                return ResultDTO<JobChatResponseDTO>.FailureResult("Esta vaga já foi finalizada");
+
+            // Atualizar campo manualmente
+            UpdateJobField(job, dto.FieldName, dto.FieldValue);
+            job.DataAtualizacao = DateTime.UtcNow;
+
+            await _jobRepository.UpdateAsync(job);
+
+            // Recuperar histórico da conversa do banco
+            var chatHistory = await _chatMessageRepository.GetByConversationIdAsync(job.ConversationId!.Value);
+            var conversationHistory = chatHistory.Select(ch => new ChatMessageItem
+            {
+                Role = ch.Role,
+                Content = ch.Conteudo,
+                Timestamp = ch.Timestamp
+            }).ToList();
+
+            // Construir mensagem informando a IA sobre a alteração manual
+            var fieldDisplayName = GetFieldDisplayName(dto.FieldName);
+            var userMessageContent = string.IsNullOrWhiteSpace(dto.UserMessage)
+                ? $"[EDIÇÃO MANUAL] O usuário alterou '{fieldDisplayName}' para: {dto.FieldValue}"
+                : dto.UserMessage;
+
+            // Salvar mensagem do usuário no banco
+            var userMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "user",
+                Conteudo = userMessageContent,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null,
+                ModeloUtilizado = null
+            };
+            await _chatMessageRepository.AddAsync(userMessage);
+
+            // Notificar IA sobre a alteração manual usando o mesmo método existente
+            var aiResult = await _jobAIService.ProcessUserResponseAsync(job, conversationHistory, userMessageContent);
+
+            // Salvar resposta da IA no banco
+            var assistantMessage = new ChatMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = job.ConversationId!.Value,
+                UserId = job.CriadoPor,
+                TenantId = tenantId,
+                TipoConversa = "job_creation",
+                Role = "assistant",
+                Conteudo = aiResult.AIResponse,
+                Timestamp = DateTime.UtcNow,
+                TokensUsados = null,
+                ModeloUtilizado = "gpt-4o-mini"
+            };
+            await _chatMessageRepository.AddAsync(assistantMessage);
+
+            var jobDetail = _mapper.Map<JobDetailDTO>(job);
+            DeserializeJobJsonFields(job, jobDetail);
+
+            var response = new JobChatResponseDTO
+            {
+                JobId = job.Id,
+                ConversationId = job.ConversationId!.Value,
+                MensagemIA = aiResult.AIResponse,
+                CamposAtualizados = new List<string> { dto.FieldName },
+                CompletionPercentage = aiResult.CompletionPercentage,
+                CriacaoConcluida = aiResult.IsComplete,
+                JobAtualizado = jobDetail
+            };
+
+            return ResultDTO<JobChatResponseDTO>.SuccessResult(response);
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<JobChatResponseDTO>.FailureResult($"Erro ao processar atualização manual: {ex.Message}");
         }
     }
 
@@ -427,6 +577,8 @@ public class JobService : IJobService
 
     private void UpdateJobField(Job job, string fieldName, object? value)
     {
+        Console.WriteLine($"🔍 UpdateJobField - Field: '{fieldName}' (lowercase: '{fieldName.ToLower()}'), Value: '{value}', Type: {value?.GetType().Name}");
+        
         switch (fieldName.ToLower())
         {
             case "titulo":
@@ -439,8 +591,19 @@ public class JobService : IJobService
                 job.Departamento = value?.ToString();
                 break;
             case "numerovagas":
+            case "numerodevagas":
+            case "numero de vagas":
+            case "vagas":
+                Console.WriteLine($"🔢 UpdateJobField - numeroVagas recebido: '{value}'");
                 if (int.TryParse(value?.ToString(), out var numVagas))
+                {
+                    Console.WriteLine($"✅ UpdateJobField - Parse OK: {numVagas}");
                     job.NumeroVagas = numVagas;
+                }
+                else
+                {
+                    Console.WriteLine($"❌ UpdateJobField - Parse FALHOU para: '{value}'");
+                }
                 break;
             case "localizacao":
                 job.Localizacao = value?.ToString();
@@ -452,18 +615,23 @@ public class JobService : IJobService
                 job.Estado = value?.ToString();
                 break;
             case "tipocontrato":
+            case "tipodecontrato":
                 if (Enum.TryParse<ContractType>(value?.ToString(), true, out var tipoContrato))
                     job.TipoContrato = tipoContrato;
                 break;
             case "modelotrabalho":
+            case "modelodetrabalho":
                 if (Enum.TryParse<WorkModel>(value?.ToString(), true, out var modeloTrabalho))
                     job.ModeloTrabalho = modeloTrabalho;
                 break;
             case "anosExperienciaminimo":
+            case "anosdeexperienciaminimo":
+            case "anosdeexperiencia":
                 if (int.TryParse(value?.ToString(), out var anosExp))
                     job.AnosExperienciaMinimo = anosExp;
                 break;
             case "formacaonecessaria":
+            case "formacao":
                 job.FormacaoNecessaria = value?.ToString();
                 break;
             case "conhecimentosobrigatorios":
@@ -490,6 +658,8 @@ public class JobService : IJobService
                 job.Beneficios = value?.ToString();
                 break;
             case "bonuscomissao":
+            case "bonus":
+            case "comissao":
                 job.BonusComissao = value?.ToString();
                 break;
             case "etapasprocesso":
@@ -499,6 +669,8 @@ public class JobService : IJobService
                 job.TiposTesteEntrevista = SerializeToJson(value);
                 break;
             case "previsaoinicio":
+            case "previsaodeinicio":
+            case "datainicio":
                 if (DateTime.TryParse(value?.ToString(), out var previsaoInicio))
                     job.PrevisaoInicio = previsaoInicio;
                 break;
@@ -514,7 +686,24 @@ public class JobService : IJobService
     private static string? SerializeToJson(object? value)
     {
         if (value == null) return null;
-        if (value is string str) return str;
+        
+        // Se for string, converte vírgulas em JSON array
+        if (value is string str)
+        {
+            // Se já é JSON válido (começa com [), mantém
+            if (str.TrimStart().StartsWith("["))
+                return str;
+            
+            // Converte string separada por vírgula em JSON array
+            // Ex: "C#, .NET, SQL" -> ["C#", ".NET", "SQL"]
+            var items = str.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+            
+            return items.Count > 0 ? JsonSerializer.Serialize(items) : null;
+        }
+        
         return JsonSerializer.Serialize(value);
     }
 
@@ -538,6 +727,38 @@ public class JobService : IJobService
         dto.CompetenciasImportantes = DeserializeJsonList(job.CompetenciasImportantes);
         dto.EtapasProcesso = DeserializeJsonList(job.EtapasProcesso);
         dto.TiposTesteEntrevista = DeserializeJsonList(job.TiposTesteEntrevista);
+    }
+
+    private static string GetFieldDisplayName(string fieldName)
+    {
+        return fieldName.ToLower() switch
+        {
+            "titulo" => "Título da Vaga",
+            "descricao" => "Descrição",
+            "departamento" => "Departamento",
+            "numerovagas" => "Número de Vagas",
+            "tipocontrato" => "Tipo de Contrato",
+            "modelotrabalho" => "Modelo de Trabalho",
+            "localizacao" => "Localização",
+            "cidade" => "Cidade",
+            "estado" => "Estado",
+            "anosExperienciaminimo" => "Anos de Experiência",
+            "formacaonecessaria" => "Formação",
+            "conhecimentosobrigatorios" => "Conhecimentos Obrigatórios",
+            "conhecimentosdesejaveis" => "Conhecimentos Desejáveis",
+            "competenciasimportantes" => "Competências",
+            "responsabilidades" => "Responsabilidades",
+            "salariomin" => "Salário Mínimo",
+            "salariomax" => "Salário Máximo",
+            "beneficios" => "Benefícios",
+            "bonuscomissao" => "Bônus/Comissão",
+            "etapasprocesso" => "Etapas do Processo",
+            "tipostesteentrevista" => "Tipos de Teste",
+            "previsaoinicio" => "Previsão de Início",
+            "sobretime" => "Sobre o Time",
+            "diferenciais" => "Diferenciais",
+            _ => fieldName
+        };
     }
 
     #endregion
