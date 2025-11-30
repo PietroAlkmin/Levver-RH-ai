@@ -1,4 +1,5 @@
 using LevverRH.Application.DTOs.Common;
+using LevverRH.Application.DTOs.Public;
 using LevverRH.Application.DTOs.Talents;
 using LevverRH.Domain.Enums.Talents;
 
@@ -13,6 +14,12 @@ public interface IJobService
     Task<ResultDTO<JobDTO>> CreateAsync(CreateJobDTO dto, Guid tenantId, Guid userId);
     Task<ResultDTO<JobDTO>> UpdateAsync(Guid id, UpdateJobDTO dto, Guid tenantId);
     Task<ResultDTO<bool>> DeleteAsync(Guid id, Guid tenantId);
+    
+    // ========== Endpoints Públicos ==========
+    /// <summary>
+    /// Obtém detalhes públicos de uma vaga (sem autenticação)
+    /// </summary>
+    Task<ResultDTO<PublicJobDetailDTO>> GetPublicJobDetailAsync(Guid jobId);
     
     // ========== Filtros ==========
     Task<ResultDTO<IEnumerable<JobDTO>>> GetByStatusAsync(Guid tenantId, JobStatus status);

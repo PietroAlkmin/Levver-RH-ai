@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { Share2 } from 'lucide-react';
 import { JobDTO } from '../types/talents.types';
 import { talentsService } from '../services/talentsService';
 import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
@@ -60,6 +62,20 @@ export const JobsList: React.FC = () => {
       // Redireciona para continuar a criação com IA
       navigate(`/talents/jobs/new?jobId=${job.id}`);
     }
+  };
+
+  // Função para copiar link de candidatura
+  const handleShareJob = (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevenir click no card
+    const candidaturaUrl = `${window.location.origin}/candidatura/${jobId}`;
+    
+    navigator.clipboard.writeText(candidaturaUrl)
+      .then(() => {
+        toast.success('Link de candidatura copiado!');
+      })
+      .catch(() => {
+        toast.error('Erro ao copiar link');
+      });
   };
 
   // Função para normalizar strings (remove acentos e caracteres especiais)
@@ -281,6 +297,15 @@ export const JobsList: React.FC = () => {
                 >
                   {getJobButtonText(job)}
                 </button>
+                {isJobComplete(job) && (
+                  <button
+                    className="btn-share-job"
+                    onClick={(e) => handleShareJob(job.id, e)}
+                    title="Copiar link de candidatura"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Login } from '../pages/Auth/Login';
 import { RegisterTenant } from '../pages/Auth/RegisterTenant';
+import { JobApplication } from '../pages/Public/JobApplication';
 import { ProtectedRoute } from './ProtectedRoute';
 import { useAuthStore } from '../stores/authStore';
 
@@ -69,6 +70,7 @@ color: '#363636',
           {/* Rotas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/register-tenant" element={<RegisterTenant />} />
+          <Route path="/candidatura/:jobId" element={<JobApplication />} />
           {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
       {/* Rotas protegidas */}

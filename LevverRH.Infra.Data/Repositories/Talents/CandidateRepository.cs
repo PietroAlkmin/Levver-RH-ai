@@ -19,7 +19,7 @@ namespace LevverRH.Infra.Data.Repositories.Talents
                 .ToListAsync();
         }
 
-        public async Task<Candidate?> GetByEmailAsync(Guid tenantId, string email)
+        public async Task<Candidate?> GetByEmailAsync(string email, Guid tenantId)
         {
             return await _context.Set<Candidate>()
                 .FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Email == email);

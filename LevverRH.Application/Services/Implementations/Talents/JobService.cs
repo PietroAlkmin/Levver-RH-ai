@@ -1,9 +1,11 @@
 using AutoMapper;
 using LevverRH.Application.DTOs.Common;
+using LevverRH.Application.DTOs.Public;
 using LevverRH.Application.DTOs.Talents;
 using LevverRH.Application.Services.Interfaces.Talents;
 using LevverRH.Domain.Entities.Talents;
 using LevverRH.Domain.Enums.Talents;
+using LevverRH.Domain.Interfaces;
 using LevverRH.Domain.Interfaces.Talents;
 using System.Text.Json;
 
@@ -14,13 +16,23 @@ public class JobService : IJobService
     private readonly IJobRepository _jobRepository;
     private readonly IJobAIService _jobAIService;
     private readonly IChatMessageRepository _chatMessageRepository;
+    private readonly ITenantRepository _tenantRepository;
+    private readonly IWhiteLabelRepository _whiteLabelRepository;
     private readonly IMapper _mapper;
 
-    public JobService(IJobRepository jobRepository, IJobAIService jobAIService, IChatMessageRepository chatMessageRepository, IMapper mapper)
+    public JobService(
+        IJobRepository jobRepository, 
+        IJobAIService jobAIService, 
+        IChatMessageRepository chatMessageRepository,
+        ITenantRepository tenantRepository,
+        IWhiteLabelRepository whiteLabelRepository,
+        IMapper mapper)
     {
         _jobRepository = jobRepository;
         _jobAIService = jobAIService;
         _chatMessageRepository = chatMessageRepository;
+        _tenantRepository = tenantRepository;
+        _whiteLabelRepository = whiteLabelRepository;
         _mapper = mapper;
     }
 
@@ -220,6 +232,60 @@ public class JobService : IJobService
         catch (Exception ex)
         {
             return ResultDTO<bool>.FailureResult($"Erro ao excluir vaga: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Endpoints Públicos
+
+    public async Task<ResultDTO<PublicJobDetailDTO>> GetPublicJobDetailAsync(Guid jobId)
+    {
+        try
+        {
+            var job = await _jobRepository.GetByIdAsync(jobId);
+            
+            if (job == null)
+                return ResultDTO<PublicJobDetailDTO>.FailureResult("Vaga não encontrada");
+
+            // Verifica se a vaga está aberta para candidaturas
+            if (job.Status != JobStatus.Aberta)
+                return ResultDTO<PublicJobDetailDTO>.FailureResult("Esta vaga não está mais disponível para candidaturas");
+
+            // Buscar informações do tenant (white label)
+            var tenant = await _tenantRepository.GetByIdAsync(job.TenantId);
+            var whiteLabel = await _whiteLabelRepository.GetByTenantIdAsync(job.TenantId);
+
+            // Criar DTO público (sem dados sensíveis)
+            var publicJobDetail = new PublicJobDetailDTO
+            {
+                Id = job.Id,
+                Titulo = job.Titulo,
+                Descricao = job.Descricao,
+                Departamento = job.Departamento,
+                Localizacao = job.Localizacao,
+                Cidade = job.Cidade,
+                Estado = job.Estado,
+                TipoContrato = job.TipoContrato?.ToString(),
+                ModeloTrabalho = job.ModeloTrabalho?.ToString(),
+                SalarioMin = job.SalarioMin,
+                SalarioMax = job.SalarioMax,
+                Beneficios = job.Beneficios,
+                AnosExperienciaMinimo = job.AnosExperienciaMinimo,
+                FormacaoNecessaria = job.FormacaoNecessaria,
+                Responsabilidades = job.Responsabilidades,
+                SobreTime = job.SobreTime,
+                Diferenciais = job.Diferenciais,
+                DataCriacao = job.DataCriacao,
+                NomeEmpresa = whiteLabel?.SystemName ?? tenant?.Nome ?? "Empresa",
+                LogoEmpresa = whiteLabel?.LogoUrl
+            };
+
+            return ResultDTO<PublicJobDetailDTO>.SuccessResult(publicJobDetail);
+        }
+        catch (Exception ex)
+        {
+            return ResultDTO<PublicJobDetailDTO>.FailureResult($"Erro ao buscar vaga pública: {ex.Message}");
         }
     }
 

@@ -282,6 +282,26 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.btn-share-job {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-share-job:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+  transform: scale(1.05);
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

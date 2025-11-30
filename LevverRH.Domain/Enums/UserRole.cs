@@ -10,6 +10,7 @@ namespace LevverRH.Domain.Enums
     {
         Admin = 1,
         Recruiter = 2,
-        Viewer = 3
+        Viewer = 3,
+        Candidato = 4
     }
 }
