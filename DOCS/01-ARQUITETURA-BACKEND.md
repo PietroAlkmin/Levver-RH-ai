@@ -56,6 +56,8 @@ LevverRH.Domain/
 │   ├── ITenantRepository.cs
 │   ├── IProductCatalogRepository.cs
 │   ├── ITenantProductRepository.cs
+│   ├── ICandidateAnalyzer.cs   # 🤖 Análise de currículos com IA
+│   ├── IPdfExtractor.cs        # 📄 Extração de texto de PDF
 │   └── ... (outros repositories)
 │
 ├── Events/                     # Domain Events
@@ -162,10 +164,16 @@ LevverRH.Application/
 │   ├── Interfaces/
 │   │   ├── IAuthService.cs
 │   │   ├── IProductService.cs
+│   │   ├── IJobAIService.cs        # 🤖 Criação de vagas com IA
+│   │   ├── ICandidateAnalyzer.cs   # 🤖 Análise de currículos
+│   │   ├── IPdfExtractor.cs        # 📄 Extração de PDF
 │   │   └── ...
 │   └── Implementations/
 │       ├── AuthService.cs       # Login, Register, SSO
 │       ├── ProductService.cs    # Gestão de produtos
+│       ├── JobAIService.cs      # 🤖 IA para criação de vagas
+│       ├── CandidateAnalyzer.cs # 🤖 IA para análise de currículos
+│       ├── PdfExtractor.cs      # 📄 Extração de texto PDF
 │       └── ...
 │
 ├── DTOs/                        # Data Transfer Objects
@@ -177,6 +185,11 @@ LevverRH.Application/
 │   ├── Product/
 │   │   ├── ProductDTO.cs
 │   │   └── TenantProductDTO.cs
+│   ├── Talents/                 # 🎯 DTOs do Levver Talents
+│   │   ├── JobDTO.cs
+│   │   ├── ApplicationDTO.cs
+│   │   ├── AnalyzeCandidateResponseDTO.cs  # 🤖 Resultado análise IA
+│   │   └── ...
 │   └── Common/
 │       └── ResultDTO.cs
 │
@@ -606,6 +619,193 @@ CREATE TABLE shared.tenant_products (...);
 CREATE SCHEMA tenant_12345678-1234-1234-1234-123456789abc;
 
 CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.candidatos (...);
+```
+
+---
+
+## 🤖 Integração com IA (OpenAI)
+
+### **Pacotes NuGet Instalados**
+
+```xml
+<PackageReference Include="Microsoft.Extensions.AI" Version="10.0.1" />
+<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.1-preview" />
+<PackageReference Include="UglyToad.PdfPig" Version="0.1.9-alpha001-patch1" />
+```
+
+### **Configuração (appsettings.json)**
+
+```json
+{
+  "OpenAI": {
+    "ApiKey": "sk-proj-...",
+    "Model": "gpt-4o-mini"
+  }
+}
+```
+
+### **Serviços de IA Implementados**
+
+#### **1. JobAIService.cs** (Criação de Vagas Assistida)
+
+```csharp
+public class JobAIService : IJobAIService
+{
+    private readonly IChatClient _chatClient;
+    
+    public async Task<string> GetFirstQuestionAsync(string mensagemInicial)
+    {
+        var messages = new List<AIChatMessage>
+        {
+            new(ChatRole.System, SYSTEM_PROMPT),
+            new(ChatRole.User, $"Usuário quer criar vaga: {mensagemInicial}")
+        };
+        
+        var response = await _chatClient.GetResponseAsync(messages, new ChatOptions
+        {
+            ResponseFormat = ChatResponseFormat.Json
+        });
+        
+        return ParseAIResponse(response.Text).Message;
+    }
+    
+    public async Task<AIProcessingResult> ProcessUserResponseAsync(
+        Job job, 
+        List<ChatMessageItem> conversationHistory, 
+        string userMessage)
+    {
+        var jobContext = BuildJobContext(job);
+        
+        var messages = new List<AIChatMessage>
+        {
+            new(ChatRole.System, SYSTEM_PROMPT),
+            new(ChatRole.System, $"Estado atual:\n{jobContext}")
+        };
+        
+        foreach (var msg in conversationHistory)
+        {
+            messages.Add(new AIChatMessage(
+                msg.Role == "user" ? ChatRole.User : ChatRole.Assistant,
+                msg.Content
+            ));
+        }
+        
+        messages.Add(new AIChatMessage(ChatRole.User, userMessage));
+        
+        var response = await _chatClient.GetResponseAsync(messages, options);
+        var parsed = ParseAIResponse(response.Text);
+        
+        return new AIProcessingResult
+        {
+            AIResponse = parsed.Message,
+            ExtractedFields = parsed.ExtractedFields,
+            IsComplete = parsed.IsComplete,
+            CompletionPercentage = parsed.CompletionPercentage
+        };
+    }
+}
+```
+
+#### **2. CandidateAnalyzer.cs** (Análise de Currículos)
+
+```csharp
+public class CandidateAnalyzer : ICandidateAnalyzer
+{
+    private readonly IChatClient _chatClient;
+    
+    public async Task<CandidateAnalysisResult> AnalyzeAsync(
+        string resumeText, 
+        string jobRequirements)
+    {
+        var systemPrompt = @"
+        Você é um especialista em análise de currículos.
+        Retorne JSON com:
+        {
+          'scoreGeral': 0-100,
+          'scoreTecnico': 0-100,
+          'scoreExperiencia': 0-100,
+          'justificativa': 'Análise detalhada...',
+          'pontosFortes': 'Pontos positivos...',
+          'pontosAtencao': 'Pontos de atenção...'
+        }";
+        
+        var userPrompt = $@"
+        REQUISITOS DA VAGA:
+        {jobRequirements}
+        
+        CURRÍCULO:
+        {resumeText}
+        
+        Analise e retorne JSON.";
+        
+        var messages = new List<AIChatMessage>
+        {
+            new(ChatRole.System, systemPrompt),
+            new(ChatRole.User, userPrompt)
+        };
+        
+        var response = await _chatClient.GetResponseAsync(messages, new ChatOptions
+        {
+            ResponseFormat = ChatResponseFormat.Json,
+            Temperature = 0.1f,
+            MaxOutputTokens = 4096
+        });
+        
+        var tokensUsed = (int)(response.Usage?.TotalTokenCount ?? 0);
+        var estimatedCost = tokensUsed / 1_000_000.0m * 5.0m; // $5/1M tokens
+        
+        return new CandidateAnalysisResult
+        {
+            Score = parsed.ScoreGeral,
+            Summary = parsed.Justificativa,
+            TokensUsed = tokensUsed,
+            EstimatedCost = estimatedCost
+        };
+    }
+}
+```
+
+#### **3. PdfExtractor.cs** (Extração de Texto de PDF)
+
+```csharp
+public class PdfExtractor : IPdfExtractor
+{
+    public async Task<string> ExtractTextAsync(byte[] pdfContent)
+    {
+        return await Task.Run(() =>
+        {
+            using var document = PdfDocument.Open(pdfContent);
+            var textBuilder = new StringBuilder();
+            
+            foreach (var page in document.GetPages())
+            {
+                textBuilder.AppendLine($"--- Página {page.Number} ---");
+                textBuilder.AppendLine(page.Text);
+            }
+            
+            return textBuilder.ToString();
+        });
+    }
+}
+```
+
+### **API Endpoints de IA**
+
+```csharp
+// POST /api/talents/applications/{id}/analyze
+[HttpPost("{id}/analyze")]
+[Authorize]
+public async Task<IActionResult> AnalyzeCandidateWithAI(Guid id)
+{
+    var tenantId = Guid.Parse(User.FindFirst("TenantId")?.Value);
+    var result = await _applicationService.AnalyzeCandidateWithAIAsync(id, tenantId);
+    return Ok(new { Success = true, Data = result });
+}
+```
+
+---
+
+**Última Atualização**: 30 de Novembro de 2025
 CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.vagas (...);
 ```
 

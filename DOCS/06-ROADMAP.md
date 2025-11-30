@@ -26,6 +26,17 @@
   - [x] DTOs completos para todas as operações
   - [x] Relacionamentos entre entidades configurados
   - [x] Dashboard API com métricas em tempo real
+  - [x] **Criação de Vagas Assistida por IA** (OpenAI GPT-4o-mini)
+    - [x] JobAIService completo
+    - [x] Chat conversacional para requisitos
+    - [x] Extração inteligente de campos
+    - [x] Geração automática de descrições
+    - [x] API endpoints (/api/talents/jobs/ai/*)
+  - [x] **Análise de Currículos com IA** (OpenAI GPT-4o)
+    - [x] PdfExtractor para extração de texto
+    - [x] CandidateAnalyzer com scoring automático
+    - [x] API endpoint (/api/talents/applications/{id}/analyze)
+    - [x] Integração com campos da entidade Application
 
 #### **Frontend**
 - [x] React 19 + TypeScript + Vite
@@ -49,6 +60,24 @@
   - [x] Rota protegida /talents
   - [x] Design responsivo com gradiente Levver
   - [x] Loading states e error handling
+  - [x] **NewJobPage - Criação com IA**
+    - [x] Chat conversacional com histórico
+    - [x] Campos editáveis manualmente
+    - [x] Indicador de progresso visual
+    - [x] Envio de mensagens e resposta da IA
+    - [x] Salvamento de vaga após conclusão
+  - [x] **JobDetailPage - Gestão e Análise**
+    - [x] Listagem de candidaturas
+    - [x] Botão "Analisar com IA" por candidato
+    - [x] Loading individual por análise
+    - [x] Exibição de scores e justificativa
+    - [x] Toast notifications (success/error)
+  - [x] **ApplyPage - Formulário Público**
+    - [x] Aplicação sem autenticação
+    - [x] Upload de currículo (PDF)
+    - [x] Criação automática de conta
+    - [x] Auto-login após aplicação
+    - [x] Validação completa de campos
 
 #### **Database**
 - [x] Schema `shared` para tabelas globais
@@ -60,28 +89,7 @@
 
 ## 🐛 **Bugs Conhecidos (Prioridade Alta)**
 
-### **1. Redirect Loop após Login**
-**Status**: 🔴 Em investigação  
-**Descrição**: Usuário faz login → redireciona para /painel → volta para /login instantaneamente  
-**Possíveis Causas**:
-- Token não está sendo salvo corretamente no localStorage
-- Zustand persist não está sincronizando
-- API retorna 401 em alguma requisição (ex: GET /api/products/my-products)
-- ProtectedRoute está verificando estado antes do Zustand hidratar
-
-**Próximos Passos**:
-1. Verificar logs do console (implementados para debug)
-2. Verificar se token está sendo salvo: `localStorage.getItem('token')`
-3. Verificar se API está retornando 401 (checar interceptor)
-4. Adicionar delay no ProtectedRoute para aguardar hidratação do Zustand
-
----
-
-### **2. Produtos não aparecem no Painel**
-**Status**: ⚠️ Esperado (sem seed data)  
-**Descrição**: Painel mostra "Nenhum produto disponível"  
-**Causa**: Não há produtos cadastrados no banco de dados  
-**Solução**: Criar seed de produtos iniciais
+Nenhum bug crítico conhecido no momento. Sistema estável após implementação do Levver Talents completo.
 
 ---
 
@@ -89,22 +97,13 @@
 
 ### **Alta Prioridade**
 
-- [ ] **Corrigir redirect loop após login**
-  - Adicionar debug logs completos
-  - Verificar ordem de execução (login → setAuth → navigate)
-  - Testar com localStorage vazio (clear cache)
-
 - [ ] **Criar seed de produtos**
   ```sql
   INSERT INTO shared.products_catalog (...) VALUES
-    ('Levver MST', '🎯', '#A417D0', '/mst', 1, 1),
+    ('Levver Talents', '🎯', '#A417D0', '/talents', 1, 1),
     ('Levver Ponto', '⏰', '#11005D', '/ponto', 2, 0),
     ('Levver Performance', '📊', '#D4C2F5', '/performance', 3, 0);
   ```
-
-- [ ] **Remover componente Dashboard.tsx antigo**
-  - Deletar `pages/Dashboard/Dashboard.tsx`
-  - Remover imports relacionados
 
 - [ ] **Adicionar validação de tenant ativo em ProtectedRoute**
   - Verificar `tenant.status === 'Ativo'`
@@ -170,35 +169,38 @@
 
 ### **Fase 2: Expansão do Levver Talents (2-4 semanas)**
 
-#### **Módulo: Páginas Completas de Gestão**
+#### **Módulo: Páginas Avançadas de Gestão**
 
 **Frontend:**
-- [ ] Criar página de gestão de vagas
-  - [ ] Listagem com filtros (status, departamento, localização)
-  - [ ] Formulário de criação/edição de vaga
-  - [ ] Detalhes da vaga com candidaturas
-  - [ ] Publicação em múltiplos canais
-- [ ] Criar página de gestão de candidatos
-  - [ ] Listagem com busca avançada
-  - [ ] Perfil completo do candidato
-  - [ ] Histórico de interações
-  - [ ] Tags e classificações
+- [ ] Criar página de listagem de vagas
+  - [ ] Filtros avançados (status, departamento, localização)
+  - [ ] Cards com informações resumidas
+  - [ ] Ações rápidas (editar, publicar, arquivar)
+- [ ] Melhorar página de gestão de candidatos
+  - [ ] Filtros por vaga, status, score IA
+  - [ ] Ordenação por score geral
+  - [ ] Visualização de análise IA completa
+  - [ ] Tags e classificações personalizadas
 - [ ] Criar página de relatórios
   - [ ] Funil de conversão
   - [ ] Tempo médio de contratação
-  - [ ] Fontes de candidatos
+  - [ ] Eficácia da análise IA
   - [ ] Exportação de dados
 - [ ] Implementar kanban de pipeline
   - [ ] Drag & drop de candidatos entre etapas
   - [ ] Customização de etapas por vaga
-  - [ ] Ações rápidas (agendar entrevista, enviar email)
+  - [ ] Ações rápidas inline
 
 **Backend:**
-- [ ] Implementar upload de currículos (Azure Blob Storage)
-- [ ] Sistema de notificações (email para candidatos)
-- [ ] API de integração com plataformas externas
+- [x] Upload de currículos (FileStorage local)
+- [ ] Migração para Azure Blob Storage
+- [ ] Sistema de notificações por email
 - [ ] Webhooks para eventos importantes
 - [ ] Sistema de templates de email
+- [ ] **Otimização de Custos de IA**
+  - [ ] Cache de análises repetidas
+  - [ ] Batch processing de currículos
+  - [ ] Limite de análises por tenant/período
 
 ---
 
@@ -438,15 +440,18 @@ Git Push → GitHub Actions
 
 ## 💡 **Ideias para o Futuro**
 
-- [ ] **IA para triagem de currículos** (ML.NET ou Azure Cognitive Services)
-- [ ] **Chatbot de atendimento** (Azure Bot Service)
+- [x] **IA para triagem de currículos** ✅ (OpenAI GPT-4o implementado)
+- [x] **IA para criação de vagas** ✅ (OpenAI GPT-4o-mini implementado)
+- [ ] **IA para geração de perguntas de entrevista**
+- [ ] **Chatbot de atendimento ao candidato** (Azure Bot Service)
 - [ ] **Marketplace de integrações** (plugins de terceiros)
 - [ ] **White-label completo** (subdomínios personalizados)
 - [ ] **Mobile apps nativos** (iOS + Android)
 - [ ] **API pública** (permitir integrações externas)
+- [ ] **Análise de vídeo de entrevistas** (Azure Video Indexer)
 
 ---
 
-**Última Atualização**: 16 de Novembro de 2025  
-**Versão do Documento**: 1.0  
+**Última Atualização**: 30 de Novembro de 2025  
+**Versão do Documento**: 2.0  
 **Responsável**: Time de Desenvolvimento Levver.ai

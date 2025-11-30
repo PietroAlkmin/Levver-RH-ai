@@ -31,10 +31,14 @@ LevverRH.Frontend/
 │   │   │   │   └── product.types.ts
 │   │   │   └── index.ts       # Exports públicos
 │   │   │
-│   │   ├── talents/           # ✅ Levver Talents (IMPLEMENTADO)
+│   │   ├── talents/           # ✅ Levver Talents (COMPLETO)
 │   │   │   ├── pages/         # Páginas do Talents
-│   │   │   │   ├── TalentsDashboard.tsx
-│   │   │   │   └── TalentsDashboard.css
+│   │   │   │   ├── TalentsDashboard.tsx     # Dashboard com métricas
+│   │   │   │   ├── TalentsDashboard.css
+│   │   │   │   ├── NewJobPage.tsx           # 🤖 Criação de vagas com IA
+│   │   │   │   ├── JobDetailPage.tsx        # 🤖 Detalhes + Análise IA
+│   │   │   │   ├── ApplyPage.tsx            # Formulário público
+│   │   │   │   └── ...
 │   │   │   ├── services/      # API do Talents
 │   │   │   │   └── talentsService.ts
 │   │   │   └── types/         # Types do Talents
@@ -798,4 +802,74 @@ import { FixedSizeList } from 'react-window';
 
 ---
 
-**Última Atualização**: 16 de Novembro de 2025
+## 🤖 Integração com IA (Frontend)
+
+### **1. talentsService.ts - Método de Análise**
+
+```typescript
+export const talentsService = {
+  async analyzeCandidateWithAI(applicationId: string): Promise<AnalyzeCandidateResponse> {
+    const response = await apiClient.post(
+      `/talents/applications/${applicationId}/analyze`
+    );
+    return response.data.data;
+  }
+};
+```
+
+### **2. JobDetailPage.tsx - UI de Análise**
+
+```typescript
+const JobDetailPage = () => {
+  const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+
+  const handleAnalyzeWithAI = async (applicationId: string) => {
+    setAnalyzingIds(prev => new Set(prev).add(applicationId));
+    
+    try {
+      const result = await talentsService.analyzeCandidateWithAI(applicationId);
+      
+      toast.success(`Análise concluída! Score: ${result.scoreGeral}/100`);
+      
+      // Atualiza aplicação local com scores
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, ...result } : app
+      ));
+    } catch (error) {
+      toast.error('Erro ao analisar candidato');
+    } finally {
+      setAnalyzingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(applicationId);
+        return newSet;
+      });
+    }
+  };
+
+  return (
+    <button
+      onClick={() => handleAnalyzeWithAI(application.id)}
+      disabled={analyzingIds.has(application.id)}
+    >
+      {analyzingIds.has(application.id) ? '⏳ Analisando...' : 
+       application.scoreGeral ? '📊 Re-analisar' : '🤖 Analisar com IA'}
+    </button>
+  );
+};
+```
+
+### **3. Estado de Loading por Candidato**
+
+```typescript
+// Antes: loading global (bloqueia tudo)
+const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+// Depois: loading individual (UX melhor)
+const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+
+// Permite analisar múltiplos candidatos simultaneamente
+```
+
+---
+
+**Última Atualização**: 30 de Novembro de 2025
