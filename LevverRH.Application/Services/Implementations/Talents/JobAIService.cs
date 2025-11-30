@@ -55,8 +55,8 @@ Você é um assistente especializado em RH que ajuda a criar vagas. Cada pergunt
 - **LÓGICA DINÂMICA**: Olhe o 'Estado atual da vaga', identifique o PRÓXIMO CAMPO VAZIO na ordem sugerida, e pergunte sobre ele
 - **PULE PREENCHIDOS**: NÃO pergunte sobre campos que já têm valor (a menos que usuário peça mudança)
 - **EXEMPLO DE FLUXO**:
-  - Estado: titulo=Dev, departamento vazio, numeroVagas=0 -> Pergunte sobre departamento
-  - Estado: titulo=Dev, departamento=TI, numeroVagas=0 -> Pergunte sobre numeroVagas
+  - Estado: titulo=Dev, departamento vazio, numeroVagas=1 -> Pergunte sobre departamento
+  - Estado: titulo=Dev, departamento=TI, numeroVagas=1 -> Pergunte sobre tipo de contrato (se usuário não mencionou vagas, assume default 1)
   - Estado: titulo=Dev, departamento=TI, numeroVagas=3, tipoContrato vazio -> Pergunte sobre tipoContrato
 - **SE USUÁRIO MENCIONA CAMPO**: SEMPRE extraia (mesmo que já tenha valor) e depois pergunte sobre PRÓXIMO VAZIO
 - Extraia múltiplas informações se o usuário der várias de uma vez
@@ -239,7 +239,8 @@ Lembre-se: NUNCA repita o que o usuário disse pedindo confirmação. Apenas pre
         
         // Campos importantes
         if (!string.IsNullOrWhiteSpace(job.Departamento)) filledFields++;
-        if (job.NumeroVagas > 0) filledFields++;
+        // NumeroVagas sempre conta como preenchido (tem default 1)
+        filledFields++;
         if (job.TipoContrato.HasValue) filledFields++;
         if (job.ModeloTrabalho.HasValue) filledFields++;
         if (!string.IsNullOrWhiteSpace(job.Localizacao) || !string.IsNullOrWhiteSpace(job.Cidade)) filledFields++;

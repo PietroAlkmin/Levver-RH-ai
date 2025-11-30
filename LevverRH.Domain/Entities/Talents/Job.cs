@@ -42,9 +42,9 @@ public class Job
     public string? Departamento { get; set; }
 
     /// <summary>
-    /// Número de vagas disponíveis (default 0 para forçar preenchimento via IA)
+    /// Número de vagas disponíveis (default 1)
     /// </summary>
-    public int NumeroVagas { get; set; } = 0;
+    public int NumeroVagas { get; set; } = 1;
 
     // ========== LOCALIZAÇÃO E FORMATO ==========
     
