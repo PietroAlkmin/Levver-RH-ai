@@ -285,34 +285,44 @@ az staticwebapp deploy \
 
 ## 📊 Status do Projeto
 
-**Versão Atual**: 1.0.0-alpha  
-**Última Atualização**: 16 de Novembro de 2025  
-**Status**: 🟡 Em Desenvolvimento Ativo  
+**Versão Atual**: 1.0.0-beta  
+**Última Atualização**: 30 de Novembro de 2025  
+**Status**: 🟢 Levver Talents Completo - Pronto para Testes  
 
 ### **Progresso**
 
 ```
-Backend:     ████████████████████░░ 95% ✅
-Frontend:    █████████████████░░░░░ 85%
-Database:    ████████████████████░░ 95%
+Backend:     ██████████████████████ 100% ✅
+Frontend:    ███████████████████░░░ 95% ✅
+Database:    ██████████████████████ 100% ✅
 Docs:        ██████████████████████ 100% ✅
-Talents:     ████████████████████░░ 90% 🚀
+IA Features: ██████████████████████ 100% ✅ (OpenAI integrado)
+Talents:     ██████████████████████ 100% 🚀 COMPLETO
 Testes:      ████░░░░░░░░░░░░░░░░░░ 20%
 ```
 
+### **Features Implementadas (Novembro 2025)**
+
+✅ **Criação de Vagas com IA**
+- Chat conversacional com GPT-4o-mini
+- Extração automática de campos
+- Edição manual com contexto preservado
+- Indicador de progresso visual
+
+✅ **Análise de Currículos com IA**
+- Extração de texto de PDF (PdfPig)
+- Análise comparativa com GPT-4o
+- Scoring automático (0-100)
+- Justificativa detalhada
+- Rastreamento de custos
+
+✅ **Aplicação Pública de Candidatos**
+- Formulário sem autenticação
+- Upload de currículo
+- Criação automática de conta
+- Auto-login pós-aplicação
+
 ---
 
-## 🎉 Agradecimentos
-
-Obrigado por contribuir com o projeto **Levver.ai RH**!
-
-Esta documentação foi criada para facilitar o onboarding de novos desenvolvedores e manter a consistência técnica do projeto.
-
-Se encontrar algum erro ou tiver sugestões de melhoria, abra uma issue no GitHub ou entre em contato com o time.
-
-**Happy Coding! 🚀**
-
----
-
-**Última Atualização**: 16 de Novembro de 2025  
+**Última Atualização**: 30 de Novembro de 2025  
 **Mantido por**: Pietro Alkmin

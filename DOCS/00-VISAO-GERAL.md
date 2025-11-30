@@ -287,22 +287,47 @@ Levver-RH-ai/
 - [x] Protected Routes
 - [x] Migrations para banco de dados
 - [x] API de Produtos (/api/products)
-- [x] **Produto Levver Talents** (primeiro produto lançado)
+- [x] **Produto Levver Talents** (primeiro produto COMPLETO)
   - [x] Backend completo (6 entidades, 4 enums, controllers, services)
-  - [x] Frontend Dashboard com métricas
+  - [x] Frontend Dashboard com métricas em tempo real
   - [x] Integração sidebar com navegação
   - [x] API endpoints para vagas, candidaturas, entrevistas
-  - [x] Dashboard com estatísticas em tempo real
+  - [x] **Criação de Vagas Assistida por IA** (OpenAI GPT-4o-mini)
+    - [x] Chat conversacional para coleta de requisitos
+    - [x] Extração inteligente de campos da vaga
+    - [x] Geração automática de descrições profissionais
+    - [x] Histórico de conversa persistente
+    - [x] Edição manual de campos com atualização contextual da IA
+  - [x] **Gestão Completa de Vagas**
+    - [x] CRUD completo de vagas
+    - [x] Listagem com filtros por status
+    - [x] Publicação/despublicação de vagas
+    - [x] Detalhamento completo de requisitos
+  - [x] **Aplicação Pública de Candidatos**
+    - [x] Formulário público de candidatura (/public/jobs/:id/apply)
+    - [x] Upload de currículo (PDF)
+    - [x] Criação automática de conta de candidato
+    - [x] Auto-login após aplicação
+    - [x] Validação de campos e sanitização
+  - [x] **Análise de Currículos com IA** (OpenAI GPT-4o)
+    - [x] Extração de texto de PDF (PdfPig)
+    - [x] Análise comparativa currículo vs requisitos da vaga
+    - [x] Scoring automático (0-100)
+    - [x] Justificativa detalhada da análise
+    - [x] Identificação de pontos fortes e atenção
+    - [x] Rastreamento de custos (tokens + estimativa)
 
 ### 🚧 **Em Desenvolvimento**
-- [ ] Correção de bugs de redirect após login
-- [ ] Seed de produtos iniciais
-- [ ] Página de gerenciamento de produtos (Admin)
+- [ ] Páginas de gestão avançada de candidatos
+- [ ] Pipeline Kanban de recrutamento
+- [ ] Relatórios e analytics avançados
+- [ ] Sistema de notificações por email
 
 ### 📋 **Próximos Passos**
-- [ ] Implementar primeiro produto (Levver MST)
+- [ ] Expansão Levver Talents (filtros avançados, kanban)
 - [ ] Sistema de cobrança/pagamento
-- [ ] Dashboard de analytics
+- [ ] Segundo produto (Levver Ponto)
+- [ ] Dashboard de analytics consolidado
 - [ ] Gestão de usuários por tenant
 - [ ] Permissões e roles avançadas
 
@@ -316,5 +341,5 @@ Levver-RH-ai/
 
 ---
 
-**Última Atualização**: 16 de Novembro de 2025
-**Versão**: 1.0.0-alpha
+**Última Atualização**: 30 de Novembro de 2025
+**Versão**: 1.0.0-beta

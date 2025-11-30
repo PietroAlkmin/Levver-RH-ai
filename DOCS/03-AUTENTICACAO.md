@@ -504,4 +504,4 @@ Authorization: Bearer {full-token}
 
 ---
 
-**Última Atualização**: 16 de Novembro de 2025
+**Última Atualização**: 30 de Novembro de 2025

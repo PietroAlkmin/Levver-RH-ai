@@ -427,6 +427,18 @@ CREATE TABLE tenant_12345678-1234-1234-1234-123456789abc.candidaturas (
     carta_apresentacao NVARCHAR(MAX),
     status NVARCHAR(50) NOT NULL DEFAULT 'Nova',  -- Nova, EmAnalise, Entrevista, Aprovada, Reprovada
     fonte NVARCHAR(100),  -- LinkedIn, Site, Indicação, etc.
+    
+    -- 🤖 Campos de Análise com IA (OpenAI)
+    score_geral INT NULL,                    -- 0-100
+    score_tecnico INT NULL,                  -- 0-100
+    score_experiencia INT NULL,              -- 0-100
+    score_cultural INT NULL,                 -- 0-100
+    score_salario INT NULL,                  -- 0-100
+    justificativa_ia NVARCHAR(MAX) NULL,     -- Análise detalhada da IA
+    pontos_fortes NVARCHAR(MAX) NULL,        -- Destacados pela IA
+    pontos_atencao NVARCHAR(MAX) NULL,       -- Alertados pela IA
+    recomendacao_ia NVARCHAR(MAX) NULL,      -- Recomendação final
+    
     data_candidatura DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     data_atualizacao DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     
@@ -705,4 +717,4 @@ WITH COMPRESSION;
 
 ---
 
-**Última Atualização**: 16 de Novembro de 2025
+**Última Atualização**: 30 de Novembro de 2025
