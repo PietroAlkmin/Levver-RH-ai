@@ -100,7 +100,16 @@ export const JobApplication: React.FC = () => {
         setTimeout(() => window.location.href = '/painel', 3000);
       }
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao enviar candidatura');
+      const errorMessage = error.message || 'Erro ao enviar candidatura';
+      
+      // Mensagens específicas para erros conhecidos
+      if (errorMessage.toLowerCase().includes('já se candidatou')) {
+        toast.warning('⚠️ Você já enviou uma candidatura para esta vaga anteriormente.');
+      } else if (errorMessage.toLowerCase().includes('não está mais recebendo')) {
+        toast.error('Esta vaga não está mais recebendo candidaturas.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setSubmitting(false);
     }
