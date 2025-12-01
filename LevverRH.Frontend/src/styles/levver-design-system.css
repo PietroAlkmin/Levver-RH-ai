@@ -70,9 +70,37 @@
   --shadow-accent-lg: 0 10px 20px rgba(164, 23, 208, 0.25);
   
   /* ===== ALPHA COLORS (para box-shadow dinâmico) ===== */
+  --primary-color-alpha-01: rgba(113, 59, 219, 0.01);
+  --primary-color-alpha-02: rgba(113, 59, 219, 0.02);
+  --primary-color-alpha-03: rgba(113, 59, 219, 0.03);
+  --primary-color-alpha-08: rgba(113, 59, 219, 0.08);
+  --primary-color-alpha-10: rgba(113, 59, 219, 0.1);
   --primary-color-alpha-15: rgba(113, 59, 219, 0.15);
   --primary-color-alpha-30: rgba(113, 59, 219, 0.3);
+  --secondary-color-alpha-10: rgba(204, 18, 239, 0.1);
   --secondary-color-alpha-15: rgba(204, 18, 239, 0.15);
+  
+  /* ===== TEXT COLOR ALPHA (17, 0, 93 - #11005D) ===== */
+  --text-color-alpha-05: rgba(17, 0, 93, 0.05);
+  --text-color-alpha-10: rgba(17, 0, 93, 0.1);
+  --text-color-alpha-15: rgba(17, 0, 93, 0.15);
+  --text-color-alpha-20: rgba(17, 0, 93, 0.2);
+  
+  /* ===== ERROR ALPHA COLORS ===== */
+  --error-color-alpha-05: rgba(232, 67, 88, 0.05);
+  --error-color-alpha-10: rgba(232, 67, 88, 0.1);
+  
+  /* ===== NEUTRAL ALPHA COLORS (black) ===== */
+  --black-alpha-04: rgba(0, 0, 0, 0.04);
+  --black-alpha-05: rgba(0, 0, 0, 0.05);
+  --black-alpha-06: rgba(0, 0, 0, 0.06);
+  --black-alpha-10: rgba(0, 0, 0, 0.1);
+  --black-alpha-20: rgba(0, 0, 0, 0.2);
+  --black-alpha-30: rgba(0, 0, 0, 0.3);
+  --black-alpha-50: rgba(0, 0, 0, 0.5);
+  
+  /* ===== WHITE ALPHA COLORS ===== */
+  --white-alpha-20: rgba(255, 255, 255, 0.2);
 
   /* ===== SPACING ===== */
   --spacing-xs: 4px;
@@ -249,7 +277,7 @@
 .input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(164, 23, 208, 0.1);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-10);
 }
 
 .input::placeholder {

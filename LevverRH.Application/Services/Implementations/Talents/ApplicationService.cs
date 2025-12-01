@@ -27,6 +27,7 @@ namespace LevverRH.Application.Services.Implementations.Talents
         private readonly IUserRepository _userRepository;
         private readonly ITenantRepository _tenantRepository;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IStorageService _storageService;
         private readonly IPdfExtractor _pdfExtractor;
         private readonly ICandidateAnalyzer _candidateAnalyzer;
         private readonly IMapper _mapper;
@@ -39,6 +40,7 @@ namespace LevverRH.Application.Services.Implementations.Talents
             IUserRepository userRepository,
             ITenantRepository tenantRepository,
             IFileStorageService fileStorageService,
+            IStorageService storageService,
             IPdfExtractor pdfExtractor,
             ICandidateAnalyzer candidateAnalyzer,
             IMapper mapper,
@@ -50,11 +52,11 @@ namespace LevverRH.Application.Services.Implementations.Talents
             _userRepository = userRepository;
             _tenantRepository = tenantRepository;
             _fileStorageService = fileStorageService;
+            _storageService = storageService;
             _pdfExtractor = pdfExtractor;
             _candidateAnalyzer = candidateAnalyzer;
             _mapper = mapper;
             _configuration = configuration;
-            _mapper = mapper;
         }
 
         public async Task<ResultDTO<IEnumerable<ApplicationDTO>>> GetByJobIdAsync(Guid jobId, Guid tenantId)
@@ -167,8 +169,10 @@ namespace LevverRH.Application.Services.Implementations.Talents
                     return ResultDTO<PublicApplicationResponseDTO>.FailureResult("Esta vaga não está mais recebendo candidaturas");
                 }
 
-                // 2. Validar arquivo de currículo
+                // 2. Validar e fazer upload do currículo
                 string? curriculoUrl = null;
+                Guid candidateTempId = Guid.NewGuid();
+                
                 if (curriculoStream != null && !string.IsNullOrEmpty(curriculoFileName))
                 {
                     var validationError = _fileStorageService.ValidateFile(curriculoFileName, curriculoStream.Length);
@@ -177,12 +181,12 @@ namespace LevverRH.Application.Services.Implementations.Talents
                         return ResultDTO<PublicApplicationResponseDTO>.FailureResult(validationError);
                     }
 
-                    // Upload do currículo
-                    curriculoUrl = await _fileStorageService.UploadFileAsync(
+                    curriculoUrl = await _storageService.UploadCurriculoAsync(
+                        job.TenantId,
+                        candidateTempId,
                         curriculoStream,
                         curriculoFileName,
-                        curriculoContentType ?? "application/pdf",
-                        $"curriculos/{job.TenantId}"
+                        curriculoContentType ?? "application/pdf"
                     );
                 }
 
@@ -198,13 +202,25 @@ namespace LevverRH.Application.Services.Implementations.Talents
                     candidate.Telefone = dto.Telefone;
                     candidate.LinkedinUrl = dto.LinkedinUrl;
                     
-                    if (!string.IsNullOrEmpty(curriculoUrl))
+                    // Se enviou novo currículo
+                    if (curriculoStream != null && !string.IsNullOrEmpty(curriculoFileName))
                     {
-                        // Remove currículo antigo se existir
+                        // Remove currículo antigo do blob se existir
                         if (!string.IsNullOrEmpty(candidate.CurriculoArquivoUrl))
                         {
-                            await _fileStorageService.DeleteFileAsync(candidate.CurriculoArquivoUrl);
+                            await _storageService.DeleteFileAsync(candidate.CurriculoArquivoUrl);
                         }
+                        
+                        // Faz upload com ID correto do candidato
+                        curriculoStream.Position = 0; // Reseta stream
+                        curriculoUrl = await _storageService.UploadCurriculoAsync(
+                            job.TenantId,
+                            candidate.Id,
+                            curriculoStream,
+                            curriculoFileName,
+                            curriculoContentType ?? "application/pdf"
+                        );
+                        
                         candidate.CurriculoArquivoUrl = curriculoUrl;
                     }
                     
@@ -213,10 +229,10 @@ namespace LevverRH.Application.Services.Implementations.Talents
                 }
                 else
                 {
-                    // Cria novo candidato
+                    // Cria novo candidato com ID real
                     candidate = new Candidate
                     {
-                        Id = Guid.NewGuid(),
+                        Id = candidateTempId, // Usa o ID temporário que já foi usado no upload
                         TenantId = job.TenantId,
                         Nome = dto.Nome,
                         Email = dto.Email,

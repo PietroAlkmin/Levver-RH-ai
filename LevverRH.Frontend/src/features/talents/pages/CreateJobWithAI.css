@@ -4,12 +4,51 @@
   height: 100%;
   width: 100%;
   background-color: var(--background-color);
-  overflow: hidden;
+}
+
+/* Header */
+.create-job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 var(--spacing-lg);
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.create-job-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  margin-left: 2rem;
+}
+
+.create-job-button-new {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--background-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.create-job-button-new:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 /* Error */
 .create-job-error {
-  background-color: var(--danger-color, #ef4444);
+  background-color: var(--error-color);
   color: white;
   padding: 1rem;
   display: flex;
@@ -44,22 +83,28 @@
   gap: 1px;
   background-color: var(--border-color);
   overflow: hidden;
+  min-height: 0;
 }
 
 .create-job-chat,
 .create-job-form {
+  display: flex;
+  flex-direction: column;
   background-color: var(--background-color);
   overflow: hidden;
+  height: 100%;
+  min-height: 0;
 }
 
 /* Actions */
 .create-job-actions {
   display: flex;
   gap: 1rem;
-  padding: 1rem;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-top: 1px solid var(--border-color);
   background-color: var(--background-color);
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .create-job-button {
@@ -78,12 +123,14 @@
 }
 
 .create-job-button-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   color: var(--background-color);
 }
 
 .create-job-button-primary:hover:not(:disabled) {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent);
 }
 
 .create-job-button-secondary {

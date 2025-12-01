@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
 import { ChatInterface, Message } from '../components/ChatInterface';
 import { JobFormPreview } from '../components/JobFormPreview';
@@ -92,8 +93,10 @@ export const CreateJobWithAI: React.FC = () => {
       
       setJobId(response.jobId);
       setConversationId(response.conversationId);
-      setCompletionPercentage(response.completionPercentage);
       setHasInitialized(true); // Marcar como inicializado
+      
+      // Iniciar com 0% pois ainda não há dados preenchidos
+      setCompletionPercentage(0);
       
       // Adicionar mensagem inicial da IA
       setMessages([{
@@ -150,10 +153,9 @@ export const CreateJobWithAI: React.FC = () => {
       };
       setMessages(prev => [...prev, aiMessage]);
 
-      // Atualizar dados
-      setCompletionPercentage(response.completionPercentage);
       if (response.jobAtualizado) {
         setJobData(response.jobAtualizado);
+        setCompletionPercentage(calculateCompletionPercentage(response.jobAtualizado));
       }
 
       // Se concluído, mostrar opções
@@ -168,37 +170,31 @@ export const CreateJobWithAI: React.FC = () => {
     }
   };
 
+  const calculateCompletionPercentage = (data: Partial<JobDetailDTO>): number => {
+    const fields = [
+      data.titulo, data.descricao, data.departamento, data.numeroVagas,
+      data.tipoContrato, data.modeloTrabalho, data.cidade, data.estado,
+      data.salarioMin, data.salarioMax
+    ];
+    const filled = fields.filter(f => f).length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   const handleFieldChange = async (fieldName: string, value: string | number | string[] | undefined) => {
     if (!jobId) return;
 
-    // Atualizar localmente
-    setJobData(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
+    const updatedData = { ...jobData, [fieldName]: value };
+    setJobData(updatedData);
+    setCompletionPercentage(calculateCompletionPercentage(updatedData));
 
-    // Notificar backend
     try {
       const valueStr = Array.isArray(value) ? value.join(', ') : String(value ?? '');
-      
-      const response = await talentsService.manualUpdateField({
+      await talentsService.manualUpdateField({
         jobId,
         fieldName,
         fieldValue: valueStr,
         userMessage: `Alterei o campo ${fieldName} manualmente`
       });
-
-      setCompletionPercentage(response.completionPercentage);
-      
-      // Adicionar mensagem da IA se houver
-      if (response.mensagemIA) {
-        const aiMessage: Message = {
-          role: 'assistant',
-          content: response.mensagemIA,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiMessage]);
-      }
     } catch (err) {
       console.error('Erro ao atualizar campo:', err);
     }
@@ -223,8 +219,31 @@ export const CreateJobWithAI: React.FC = () => {
     localStorage.removeItem('job-creation-hasInitialized');
   };
 
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+    
+    if (!jobData.titulo?.trim()) missingFields.push('Título da Vaga');
+    if (!jobData.descricao?.trim()) missingFields.push('Descrição');
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  };
+
   const handlePublish = async () => {
     if (!jobId) return;
+
+    // Validar campos obrigatórios
+    const validation = validateRequiredFields();
+    if (!validation.isValid) {
+      const missingFieldsText = validation.missingFields.join(', ');
+      setError(`Campos obrigatórios faltando: ${missingFieldsText}`);
+      
+      // Limpar erro após 5 segundos
+      setTimeout(() => setError(''), 5000);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -233,8 +252,9 @@ export const CreateJobWithAI: React.FC = () => {
         publicarImediatamente: true
       });
 
+      toast.success('Vaga publicada com sucesso!');
       clearLocalStorage(); // Limpar dados salvos
-      navigate('/talents/jobs');
+      navigate(`/talents/vagas/${jobId}`);
     } catch (err) {
       setError('Erro ao publicar vaga');
       console.error('Erro ao publicar:', err);
@@ -271,7 +291,7 @@ export const CreateJobWithAI: React.FC = () => {
   };
 
   return (
-    <MainLayout>
+    <MainLayout showHeader={false}>
       <div className="create-job-container">
         {error && (
           <div className="create-job-error">
@@ -282,17 +302,11 @@ export const CreateJobWithAI: React.FC = () => {
 
         {/* Header com botão para nova vaga */}
         {hasInitialized && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ margin: 0 }}>Criar Nova Vaga com IA</h2>
+          <div className="create-job-header">
+            <h1 className="create-job-title">Nova Vaga</h1>
             <button 
               onClick={handleStartNewJob}
-              style={{ 
-                padding: '0.5rem 1rem',
-                background: 'transparent',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              className="create-job-button-new"
             >
               Começar Nova Vaga
             </button>
@@ -315,29 +329,13 @@ export const CreateJobWithAI: React.FC = () => {
             <JobFormPreview
               jobData={jobData}
               onFieldChange={handleFieldChange}
+              completionPercentage={completionPercentage}
+              onSaveDraft={handleSaveDraft}
+              onPublish={handlePublish}
+              isLoading={isLoading}
             />
           </div>
         </div>
-
-        {/* Ações */}
-        {completionPercentage >= 80 && (
-          <div className="create-job-actions">
-            <button
-              onClick={handleSaveDraft}
-              disabled={isLoading}
-              className="create-job-button create-job-button-secondary"
-            >
-              Salvar Rascunho
-            </button>
-            <button
-              onClick={handlePublish}
-              disabled={isLoading}
-              className="create-job-button create-job-button-primary"
-            >
-              Publicar Vaga
-            </button>
-          </div>
-        )}
       </div>
     </MainLayout>
   );

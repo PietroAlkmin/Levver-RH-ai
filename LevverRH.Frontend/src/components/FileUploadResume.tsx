@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { FileText, Upload, X } from 'lucide-react';
+import { Upload, FileText, X } from 'lucide-react';
+import './FileUploadResume.css';
 
 interface FileUploadResumeProps {
   onFileSelect: (file: File | null) => void;
@@ -7,7 +8,7 @@ interface FileUploadResumeProps {
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['.pdf', '.docx'];
+const ALLOWED_TYPES = ['.pdf'];
 
 export const FileUploadResume: React.FC<FileUploadResumeProps> = ({ onFileSelect, error }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -15,15 +16,13 @@ export const FileUploadResume: React.FC<FileUploadResumeProps> = ({ onFileSelect
   const [validationError, setValidationError] = useState<string>('');
 
   const validateFile = (file: File): string | null => {
-    // Validar tamanho
     if (file.size > MAX_FILE_SIZE) {
       return 'Arquivo muito grande. Tamanho máximo: 5MB';
     }
 
-    // Validar tipo
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!ALLOWED_TYPES.includes(extension)) {
-      return 'Tipo de arquivo não permitido. Aceito apenas: PDF, DOCX';
+      return 'Tipo de arquivo não permitido. Aceito apenas: PDF';
     }
 
     return null;
@@ -83,70 +82,45 @@ export const FileUploadResume: React.FC<FileUploadResumeProps> = ({ onFileSelect
   const displayError = error || validationError;
 
   return (
-    <div className="space-y-2">
+    <div className="file-upload-container">
       {!selectedFile ? (
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`
-            border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-            transition-colors duration-200
-            ${isDragging 
-              ? 'border-blue-500 bg-blue-50' 
-              : displayError
-              ? 'border-red-300 bg-red-50'
-              : 'border-gray-300 hover:border-gray-400'
-            }
-          `}
+          className={`file-upload-dropzone ${isDragging ? 'dragging' : ''} ${displayError ? 'error' : ''}`}
         >
-          <label htmlFor="resume-upload" className="cursor-pointer">
-            <div className="flex flex-col items-center space-y-3">
-              <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
-              <div>
-                <p className="text-sm font-medium text-gray-700">
-                  Arraste seu currículo ou clique para selecionar
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  PDF ou DOCX - Máximo 5MB
-                </p>
-              </div>
+          <label htmlFor="resume-upload" className="file-upload-label">
+            <Upload size={32} />
+            <div className="file-upload-text">
+              <p className="file-upload-title">Arraste seu currículo ou clique para selecionar</p>
+              <p className="file-upload-subtitle">Apenas PDF - Máximo 5MB</p>
             </div>
           </label>
           <input
             id="resume-upload"
             type="file"
-            accept=".pdf,.docx"
+            accept=".pdf"
             onChange={handleInputChange}
-            className="hidden"
+            className="file-upload-input"
           />
         </div>
       ) : (
-        <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <FileText className="w-8 h-8 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
+        <div className="file-selected">
+          <div className="file-info">
+            <FileText size={24} />
+            <div className="file-details">
+              <p className="file-name">{selectedFile.name}</p>
+              <p className="file-size">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
-            <button
-              type="button"
-              onClick={handleRemoveFile}
-              className="p-1 hover:bg-gray-200 rounded transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
           </div>
+          <button type="button" onClick={handleRemoveFile} className="file-remove">
+            <X size={18} />
+          </button>
         </div>
       )}
 
-      {displayError && (
-        <p className="text-sm text-red-600">{displayError}</p>
-      )}
+      {displayError && <p className="file-error">{displayError}</p>}
     </div>
   );
 };

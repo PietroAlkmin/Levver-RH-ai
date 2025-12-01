@@ -1,87 +1,88 @@
-import React from 'react';
-import { Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
+import { MetricCard } from '../components/MetricCard';
+import { useDashboardStore } from '../../../stores/useDashboardStore';
+import { Briefcase, Users, UserCheck, Calendar, TrendingUp } from 'lucide-react';
+import './TalentsDashboard.css';
 
-const TalentsDashboard: React.FC = () => {
-  const navigate = useNavigate();
+const TalentsDashboard = () => {
+  const { stats, isLoading, error, fetchStats } = useDashboardStore();
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  if (isLoading) {
+    return (
+      <MainLayout showHeader={false}>
+        <div className="dashboard-container">
+          <div className="dashboard-header">
+            <h1>Painel de Controle</h1>
+          </div>
+          <div className="dashboard-content">
+            <div className="loading-state">Carregando estatísticas...</div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout showHeader={false}>
+        <div className="dashboard-container">
+          <div className="dashboard-header">
+            <h1>Painel de Controle</h1>
+          </div>
+          <div className="dashboard-content">
+            <div className="error-state">{error}</div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
-    <MainLayout>
-      <div style={{
-        padding: '2rem',
-        minHeight: 'calc(100vh - 64px)'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 'calc(100vh - 64px - 4rem)',
-          textAlign: 'center',
-          gap: '2rem'
-        }}>
-          <div style={{ 
-            marginBottom: '1rem',
-            color: '#6B7280',
-            display: 'flex',
-            justifyContent: 'center'
-          }}>
-            <Briefcase size={64} strokeWidth={1.5} />
-          </div>
-          <h2 style={{ 
-            fontSize: '1.5rem', 
-            fontWeight: 600,
-            color: '#6B7280',
-            margin: 0
-          }}>
-            Dashboard em desenvolvimento
-          </h2>
+    <MainLayout showHeader={false}>
+      <div className="dashboard-container">
+        {/* Header */}
+        <div className="dashboard-header">
+          <h1>Painel de Controle</h1>
+        </div>
 
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            marginTop: '1rem'
-          }}>
-            <button
-              onClick={() => navigate('/talents/vagas')}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-            >
-              Ver Vagas
-            </button>
-
-            <button
-              onClick={() => navigate('/talents/jobs/new')}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-            >
-              Criar Vaga com IA
-            </button>
+        {/* Content */}
+        <div className="dashboard-content">
+          <div className="metrics-grid">
+            <MetricCard
+              icon={<Briefcase />}
+              label="Vagas Ativas"
+              value={stats?.vagasAbertas || 0}
+              subtitle="Vagas abertas para candidatura"
+            />
+            <MetricCard
+              icon={<Users />}
+              label="Total de Candidaturas"
+              value={stats?.totalCandidaturas || 0}
+              subtitle="Candidatos inscritos"
+            />
+            <MetricCard
+              icon={<UserCheck />}
+              label="Candidaturas Novas"
+              value={stats?.candidaturasNovas || 0}
+              subtitle="Aguardando análise"
+            />
+            <MetricCard
+              icon={<Calendar />}
+              label="Entrevistas Agendadas"
+              value={stats?.entrevistasAgendadas || 0}
+              subtitle="Em processo de entrevista"
+            />
+            <MetricCard
+              icon={<TrendingUp />}
+              label="Taxa de Conversão"
+              value={`${stats?.taxaConversao || 0}%`}
+              subtitle="Candidatos aprovados"
+            />
           </div>
         </div>
       </div>

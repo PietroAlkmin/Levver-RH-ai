@@ -1,0 +1,134 @@
+/* File Upload */
+.file-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+}
+
+.file-upload-dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  background: var(--background-color);
+}
+
+.file-upload-dropzone:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-color-alpha-02);
+}
+
+.file-upload-dropzone.dragging {
+  border-color: var(--primary-color);
+  background: var(--primary-color-alpha-08);
+}
+
+.file-upload-dropzone.error {
+  border-color: var(--error-color);
+  background: var(--error-color-alpha-05);
+}
+
+.file-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  cursor: pointer;
+}
+
+.file-upload-label svg {
+  color: var(--primary-color);
+}
+
+.file-upload-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.file-upload-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.file-upload-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.file-upload-input {
+  display: none;
+}
+
+/* File Selected */
+.file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--background-secondary);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.file-info svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.file-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.file-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.file-remove:hover {
+  background: var(--error-color);
+  color: var(--background-color);
+}
+
+/* Error */
+.file-error {
+  font-size: 0.75rem;
+  color: var(--error-color);
+  margin: 0;
+  font-weight: 500;
+}

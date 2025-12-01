@@ -71,20 +71,22 @@ class PublicApplicationService {
   ): Promise<PublicApplicationResponseDTO> {
     try {
       const formData = new FormData();
-      formData.append('JobId', dto.jobId);
-      formData.append('Nome', dto.nome);
-      formData.append('Email', dto.email);
-      formData.append('Telefone', dto.telefone);
+      formData.append('jobId', dto.jobId);
+      formData.append('nome', dto.nome);
+      formData.append('email', dto.email);
+      formData.append('telefone', dto.telefone);
+      
       if (dto.linkedinUrl) {
-        formData.append('LinkedinUrl', dto.linkedinUrl);
+        formData.append('linkedinUrl', dto.linkedinUrl);
       }
-      if (dto.criarConta) {
-        formData.append('CriarConta', 'true');
-        if (dto.senha) {
-          formData.append('Senha', dto.senha);
-        }
+      
+      formData.append('criarConta', dto.criarConta ? 'true' : 'false');
+      
+      if (dto.criarConta && dto.senha) {
+        formData.append('senha', dto.senha);
       }
-      formData.append('Curriculo', curriculoFile);
+      
+      formData.append('curriculo', curriculoFile);
 
       const response = await publicClient.post<PublicApplicationResponseDTO>(
         '/public/applications',
@@ -97,9 +99,10 @@ class PublicApplicationService {
       );
 
       return response.data;
-    } catch (error) {
-      console.error('Erro ao enviar candidatura:', error);
-      throw error;
+    } catch (error: any) {
+      // Captura mensagem específica do backend
+      const errorMessage = error.response?.data?.message || error.response?.data?.Message || 'Erro ao enviar candidatura';
+      throw new Error(errorMessage);
     }
   }
 }

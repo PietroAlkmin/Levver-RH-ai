@@ -11,6 +11,7 @@ public class AzureBlobStorageService : IStorageService
     private const string LogosContainer = "logos";
     private const string FaviconsContainer = "favicons";
     private const string ProfilePhotosContainer = "profile-photos";
+    private const string CurriculosContainer = "curriculos";
 
     public AzureBlobStorageService(IConfiguration configuration)
     {
@@ -31,6 +32,25 @@ public class AzureBlobStorageService : IStorageService
     public async Task<string> UploadProfilePhotoAsync(Guid userId, Stream fileStream, string fileName, string contentType)
     {
         return await UploadFileAsync(ProfilePhotosContainer, userId, fileStream, fileName, contentType);
+    }
+
+    public async Task<string> UploadCurriculoAsync(Guid tenantId, Guid candidateId, Stream fileStream, string fileName, string contentType)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(CurriculosContainer);
+        await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
+
+        var extension = Path.GetExtension(fileName);
+        var blobName = $"tenant-{tenantId}/candidate-{candidateId}/{Guid.NewGuid()}{extension}";
+        var blobClient = containerClient.GetBlobClient(blobName);
+
+        var blobHttpHeaders = new BlobHttpHeaders { ContentType = contentType };
+        
+        await blobClient.UploadAsync(fileStream, new BlobUploadOptions 
+        { 
+            HttpHeaders = blobHttpHeaders 
+        });
+
+        return blobClient.Uri.ToString();
     }
 
     public async Task<bool> DeleteFileAsync(string fileUrl)
