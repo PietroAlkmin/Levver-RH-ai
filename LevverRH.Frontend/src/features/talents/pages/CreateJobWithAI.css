@@ -4,12 +4,45 @@
   height: 100%;
   width: 100%;
   background-color: var(--background-color);
-  overflow: hidden;
+}
+
+/* Header */
+.create-job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+}
+
+.create-job-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.create-job-button-new {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.create-job-button-new:hover {
+  background-color: var(--background-secondary);
+  border-color: var(--primary-color);
 }
 
 /* Error */
 .create-job-error {
-  background-color: var(--danger-color, #ef4444);
+  background-color: var(--error-color);
   color: white;
   padding: 1rem;
   display: flex;
@@ -78,12 +111,14 @@
 }
 
 .create-job-button-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
   color: var(--background-color);
 }
 
 .create-job-button-primary:hover:not(:disabled) {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent);
 }
 
 .create-job-button-secondary {

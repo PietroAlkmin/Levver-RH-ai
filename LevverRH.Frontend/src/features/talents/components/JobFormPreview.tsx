@@ -5,6 +5,10 @@ import './JobFormPreview.css';
 export interface JobFormPreviewProps {
   jobData: Partial<JobDetailDTO>;
   onFieldChange: (fieldName: string, value: string | number | string[] | undefined) => void;
+  completionPercentage?: number;
+  onSaveDraft?: () => void;
+  onPublish?: () => void;
+  isLoading?: boolean;
 }
 
 /**
@@ -13,7 +17,11 @@ export interface JobFormPreviewProps {
  */
 export const JobFormPreview: React.FC<JobFormPreviewProps> = ({
   jobData,
-  onFieldChange
+  onFieldChange,
+  completionPercentage = 0,
+  onSaveDraft,
+  onPublish,
+  isLoading = false
 }) => {
   const handleInputChange = (fieldName: string, value: string | number | string[] | undefined) => {
     onFieldChange(fieldName, value);
@@ -383,6 +391,30 @@ export const JobFormPreview: React.FC<JobFormPreviewProps> = ({
           </div>
         </section>
       </div>
+
+      {/* Footer com Botões de Ação */}
+      {(onSaveDraft || onPublish) && (
+        <div className="job-form-footer">
+          {onSaveDraft && (
+            <button
+              onClick={onSaveDraft}
+              disabled={isLoading}
+              className="job-form-button job-form-button-secondary"
+            >
+              Salvar Rascunho
+            </button>
+          )}
+          {onPublish && (
+            <button
+              onClick={onPublish}
+              disabled={isLoading}
+              className="job-form-button job-form-button-primary"
+            >
+              Publicar Vaga
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
