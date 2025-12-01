@@ -291,7 +291,7 @@ export const CreateJobWithAI: React.FC = () => {
   };
 
   return (
-    <MainLayout>
+    <MainLayout showHeader={false}>
       <div className="create-job-container">
         {error && (
           <div className="create-job-error">
@@ -303,7 +303,7 @@ export const CreateJobWithAI: React.FC = () => {
         {/* Header com botão para nova vaga */}
         {hasInitialized && (
           <div className="create-job-header">
-            <h1 className="create-job-title">Criar Nova Vaga com IA</h1>
+            <h1 className="create-job-title">Nova Vaga</h1>
             <button 
               onClick={handleStartNewJob}
               className="create-job-button-new"

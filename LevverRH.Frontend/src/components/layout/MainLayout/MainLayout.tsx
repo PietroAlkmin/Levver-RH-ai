@@ -5,14 +5,15 @@ import './MainLayout.css';
 
 interface MainLayoutProps {
   children: React.ReactNode;
+  showHeader?: boolean;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+export const MainLayout: React.FC<MainLayoutProps> = ({ children, showHeader = true }) => {
   return (
     <div className="main-layout">
       <Sidebar />
       <div className="layout-content">
-        <Header />
+        {showHeader && <Header />}
         <main className="layout-main">
           {children}
         </main>
