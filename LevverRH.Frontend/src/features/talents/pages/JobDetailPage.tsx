@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Search, ChevronDown, ChevronUp, Edit, ArrowUpDown, Calendar, SortAsc, Eye, MapPin, Briefcase, Users, Share2 } from 'lucide-react';
 import { talentsService } from '../services/talentsService';
 import { JobDetailDTO, ApplicationDTO } from '../types/talents.types';
+import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
 import './JobDetailPage.css';
 
 export const JobDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
   
   const [job, setJob] = useState<JobDetailDTO | null>(null);
   const [applications, setApplications] = useState<ApplicationDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState<Partial<JobDetailDTO>>({});
-  const [analyzingIds, setAnalyzingIds] = useState<Set<string>>(new Set());
+  const [isJobExpanded, setIsJobExpanded] = useState(false);
+  
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     loadData();
@@ -27,7 +33,6 @@ export const JobDetailPage: React.FC = () => {
         talentsService.getApplicationsByJob(jobId!)
       ]);
       setJob(jobData);
-      setFormData(jobData);
       setApplications(applicationsData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -37,285 +42,384 @@ export const JobDetailPage: React.FC = () => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      // TODO: Implementar save quando o endpoint estiver pronto
-      toast.success('Vaga atualizada com sucesso!');
-      setEditMode(false);
-      loadData();
-    } catch (error) {
-      toast.error('Erro ao salvar alterações');
-    }
-  };
-
-  const handleViewResume = (candidateId: string) => {
-    // TODO: Implementar visualização de currículo
+  const handleEdit = () => {
+    // TODO: Navegar para tela de edição com IA
     toast('Funcionalidade em desenvolvimento', { icon: 'ℹ️' });
   };
 
-  const handleAnalyzeWithAI = async (applicationId: string) => {
-    setAnalyzingIds(prev => new Set(prev).add(applicationId));
-    
-    try {
-      toast.loading('Analisando currículo com IA...', { id: `analyze-${applicationId}` });
-      
-      const result = await talentsService.analyzeCandidateWithAI(applicationId);
-      
-      toast.success(`Análise concluída! Score: ${result.scoreGeral}`, { 
-        id: `analyze-${applicationId}`,
-        duration: 5000 
-      });
-      
-      // Recarregar candidaturas para mostrar o score atualizado
-      const updatedApplications = await talentsService.getApplicationsByJob(jobId!);
-      setApplications(updatedApplications);
-      
-    } catch (error: any) {
-      console.error('Erro ao analisar candidato:', error);
-      toast.error(error.response?.data?.message || 'Erro ao analisar currículo', { 
-        id: `analyze-${applicationId}` 
-      });
-    } finally {
-      setAnalyzingIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(applicationId);
-        return newSet;
-      });
-    }
+  const handleViewDetails = (applicationId: string) => {
+    // TODO: Navegar para detalhes do candidato
+    toast('Funcionalidade em desenvolvimento', { icon: 'ℹ️' });
   };
 
+  // Filtrar e ordenar candidatos
+  const filteredApplications = applications
+    .filter(app => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        app.candidateNome.toLowerCase().includes(searchLower) ||
+        app.candidateEmail.toLowerCase().includes(searchLower)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'date') {
+        const dateA = new Date(a.dataInscricao).getTime();
+        const dateB = new Date(b.dataInscricao).getTime();
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      } else {
+        const nameA = a.candidateNome.toLowerCase();
+        const nameB = b.candidateNome.toLowerCase();
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      }
+    });
+
   if (loading) {
-    return <div className="loading">Carregando...</div>;
+    return (
+      <MainLayout showHeader={false}>
+        <div className="job-detail-container">
+          <div className="job-detail-header">
+            <h1>Lista de candidatos</h1>
+          </div>
+          <div className="loading-state">Carregando...</div>
+        </div>
+      </MainLayout>
+    );
   }
 
   if (!job) {
-    return <div className="error">Vaga não encontrada</div>;
+    return (
+      <MainLayout showHeader={false}>
+        <div className="job-detail-container">
+          <div className="job-detail-header">
+            <h1>Lista de candidatos</h1>
+          </div>
+          <div className="error-state">Vaga não encontrada</div>
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="job-detail-page">
+    <MainLayout showHeader={false}>
       <div className="job-detail-container">
         {/* Header */}
-        <div className="job-header">
-          <div className="job-header-content">
-            <h1>{job.titulo}</h1>
-            <div className="job-meta">
-              <span className="status-badge status-{job.status.toLowerCase()}">
-                {job.status}
-              </span>
-              {job.cidade && job.estado && (
-                <span className="meta-item">📍 {job.cidade}, {job.estado}</span>
-              )}
-              {job.tipoContrato && (
-                <span className="meta-item">⏰ {job.tipoContrato}</span>
-              )}
-              <span className="meta-item">👥 {job.totalCandidaturas} candidatura(s)</span>
-            </div>
-          </div>
-          <button 
-            onClick={() => setEditMode(!editMode)}
-            className="edit-button"
-          >
-            {editMode ? '❌ Cancelar' : '✏️ Editar'}
+        <div className="job-detail-header">
+          <h1>Lista de candidatos</h1>
+          <button className="btn-edit-job" onClick={handleEdit}>
+            <Edit size={18} />
+            Editar vaga
           </button>
         </div>
 
-        {/* Informações da Vaga */}
-        <div className="job-info-section">
-          <h2>📋 Informações da Vaga</h2>
-          
-          {editMode ? (
-            <div className="edit-form">
-              <div className="form-group">
-                <label>Descrição</label>
-                <textarea
-                  value={formData.descricao || ''}
-                  onChange={(e) => setFormData({...formData, descricao: e.target.value})}
-                  rows={5}
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Departamento</label>
-                  <input
-                    type="text"
-                    value={formData.departamento || ''}
-                    onChange={(e) => setFormData({...formData, departamento: e.target.value})}
-                  />
+        <div className="job-detail-content">
+          {/* Job Info Card - Único e compacto */}
+          <div className="job-detail-card">
+            <div className="job-card-header">
+              <div className="job-card-main">
+                <div className="job-card-title-row">
+                  <h2>{job.titulo}</h2>
+                  <span className={`status-badge status-${job.status.toLowerCase()}`}>
+                    {job.status}
+                  </span>
                 </div>
-
-                <div className="form-group">
-                  <label>Número de Vagas</label>
-                  <input
-                    type="number"
-                    value={formData.numeroVagas || 1}
-                    onChange={(e) => setFormData({...formData, numeroVagas: parseInt(e.target.value)})}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Salário Mínimo</label>
-                  <input
-                    type="number"
-                    value={formData.salarioMin || ''}
-                    onChange={(e) => setFormData({...formData, salarioMin: parseFloat(e.target.value)})}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Salário Máximo</label>
-                  <input
-                    type="number"
-                    value={formData.salarioMax || ''}
-                    onChange={(e) => setFormData({...formData, salarioMax: parseFloat(e.target.value)})}
-                    placeholder="0.00"
-                  />
+                <div className="job-card-info-row">
+                  <span className="info-item">
+                    {new Date(job.dataCriacao).toLocaleDateString('pt-BR')}
+                  </span>
+                  <span className="info-divider">•</span>
+                  <span className="info-item">
+                    <MapPin size={14} />
+                    {job.cidade && job.estado ? `${job.cidade}, ${job.estado}` : job.localizacao || '-'}
+                  </span>
+                  <span className="info-divider">•</span>
+                  <span className="info-item">
+                    <Briefcase size={14} />
+                    {job.tipoContrato || '-'}
+                  </span>
+                  <span className="info-divider">•</span>
+                  <span className="info-item">
+                    {job.modeloTrabalho || '-'}
+                  </span>
+                  <span className="info-divider">•</span>
+                  <span className="info-item">
+                    <Users size={14} />
+                    {applications.length} candidaturas
+                  </span>
+                  <span className="info-divider">•</span>
+                  <span className="info-item">
+                    {job.numeroVagas} {job.numeroVagas === 1 ? 'vaga' : 'vagas'}
+                  </span>
                 </div>
               </div>
-
-              <div className="form-group">
-                <label>Responsabilidades</label>
-                <textarea
-                  value={formData.responsabilidades || ''}
-                  onChange={(e) => setFormData({...formData, responsabilidades: e.target.value})}
-                  rows={4}
-                />
+              <div className="job-card-actions">
+                <button 
+                  className="btn-copy-link"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(`${window.location.origin}/candidatura/${job.id}`);
+                    toast.success('Link copiado!');
+                  }}
+                  title="Copiar link de candidatura"
+                >
+                  <Share2 size={16} />
+                  Copiar link
+                </button>
+                <button 
+                  className="btn-icon-action"
+                  onClick={() => setIsJobExpanded(!isJobExpanded)}
+                  title={isJobExpanded ? 'Recolher' : 'Ver tudo'}
+                >
+                  {isJobExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               </div>
-
-              <div className="form-group">
-                <label>Benefícios</label>
-                <textarea
-                  value={formData.beneficios || ''}
-                  onChange={(e) => setFormData({...formData, beneficios: e.target.value})}
-                  rows={3}
-                />
-              </div>
-
-              <button onClick={handleSave} className="save-button">
-                💾 Salvar Alterações
-              </button>
             </div>
-          ) : (
-            <div className="info-display">
-              <div className="info-item">
-                <strong>Descrição:</strong>
-                <p>{job.descricao}</p>
-              </div>
 
-              {job.responsabilidades && (
-                <div className="info-item">
-                  <strong>Responsabilidades:</strong>
-                  <p>{job.responsabilidades}</p>
-                </div>
-              )}
-
-              <div className="info-grid">
-                {job.departamento && (
-                  <div className="info-item">
-                    <strong>Departamento:</strong>
-                    <span>{job.departamento}</span>
-                  </div>
-                )}
-
-                <div className="info-item">
-                  <strong>Vagas:</strong>
-                  <span>{job.numeroVagas}</span>
-                </div>
-
-                {(job.salarioMin || job.salarioMax) && (
-                  <div className="info-item">
-                    <strong>Salário:</strong>
-                    <span>
-                      {job.salarioMin && job.salarioMax
-                        ? `R$ ${job.salarioMin.toLocaleString('pt-BR')} - R$ ${job.salarioMax.toLocaleString('pt-BR')}`
-                        : job.salarioMin
-                        ? `A partir de R$ ${job.salarioMin.toLocaleString('pt-BR')}`
-                        : `Até R$ ${job.salarioMax?.toLocaleString('pt-BR')}`}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {job.beneficios && (
-                <div className="info-item">
-                  <strong>Benefícios:</strong>
-                  <p>{job.beneficios}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Lista de Candidatos */}
-        <div className="candidates-section">
-          <h2>👥 Candidatos ({applications.length})</h2>
-
-          {applications.length === 0 ? (
-            <div className="no-candidates">
-              <p>Nenhum candidato ainda</p>
-            </div>
-          ) : (
-            <div className="candidates-list">
-              {applications.map((application) => (
-                <div key={application.id} className="candidate-card">
-                  <div className="candidate-header">
-                    <div className="candidate-info">
-                      <h3>{application.candidateNome}</h3>
-                      <p className="candidate-email">{application.candidateEmail}</p>
-                      <p className="candidate-date">
-                        Aplicado em: {new Date(application.dataInscricao).toLocaleDateString('pt-BR')}
-                      </p>
+            {/* Conteúdo expandido */}
+            {isJobExpanded && (
+              <div className="job-card-expanded">
+                {/* Seção: Descrição da vaga */}
+                <div className="expanded-section">
+                  <h3 className="section-title">Descrição</h3>
+                  <div className="section-content">
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <p>{job.descricao || '-'}</p>
+                      </div>
+                      <div className="expanded-field"></div>
+                      <div className="expanded-field"></div>
                     </div>
-                    
-                    <div className="candidate-score">
-                      <div className="score-label">Score</div>
-                      <div className="score-value">
-                        {application.scoreGeral ? (
-                          <span className="score-number">{application.scoreGeral}%</span>
-                        ) : (
-                          <span className="score-placeholder">-</span>
-                        )}
+                  </div>
+                </div>
+
+                {/* Seção: Requisitos */}
+                <div className="expanded-section">
+                  <h3 className="section-title">Requisitos</h3>
+                  <div className="section-content">
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Responsabilidades</label>
+                        <p>{job.responsabilidades || '-'}</p>
+                      </div>
+                      <div className="expanded-field"></div>
+                      <div className="expanded-field"></div>
+                    </div>
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Experiência</label>
+                        <span>{job.anosExperienciaMinimo ? `${job.anosExperienciaMinimo} ${job.anosExperienciaMinimo === 1 ? 'ano' : 'anos'}` : '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Formação</label>
+                        <span>{job.formacaoNecessaria || '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Departamento</label>
+                        <span>{job.departamento || '-'}</span>
+                      </div>
+                    </div>
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Conhecimentos obrigatórios</label>
+                        {job.conhecimentosObrigatorios && job.conhecimentosObrigatorios.length > 0 ? (
+                          <div className="tags-list">
+                            {job.conhecimentosObrigatorios.map((item, idx) => (
+                              <span key={idx} className="tag-mini">{item}</span>
+                            ))}
+                          </div>
+                        ) : <span>-</span>}
+                      </div>
+                      <div className="expanded-field">
+                        <label>Conhecimentos desejáveis</label>
+                        {job.conhecimentosDesejaveis && job.conhecimentosDesejaveis.length > 0 ? (
+                          <div className="tags-list">
+                            {job.conhecimentosDesejaveis.map((item, idx) => (
+                              <span key={idx} className="tag-mini">{item}</span>
+                            ))}
+                          </div>
+                        ) : <span>-</span>}
+                      </div>
+                      <div className="expanded-field">
+                        <label>Competências</label>
+                        {job.competenciasImportantes && job.competenciasImportantes.length > 0 ? (
+                          <div className="tags-list">
+                            {job.competenciasImportantes.map((item, idx) => (
+                              <span key={idx} className="tag-mini">{item}</span>
+                            ))}
+                          </div>
+                        ) : <span>-</span>}
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="candidate-status">
-                    <span className={`status-badge status-${application.status.toLowerCase()}`}>
-                      {application.status}
-                    </span>
-                  </div>
-
-                  <div className="candidate-actions">
-                    <button
-                      onClick={() => handleAnalyzeWithAI(application.id)}
-                      className="action-button ai-button"
-                      disabled={analyzingIds.has(application.id)}
-                    >
-                      {analyzingIds.has(application.id) ? (
-                        <>⏳ Analisando...</>
-                      ) : application.scoreGeral ? (
-                        <>📊 Re-analisar</>
-                      ) : (
-                        <>🤖 Analisar com IA</>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleViewResume(application.candidateId)}
-                      className="action-button resume-button"
-                    >
-                      📄 Ver Currículo
-                    </button>
+                {/* Seção: Remuneração */}
+                <div className="expanded-section">
+                  <h3 className="section-title">Remuneração e Benefícios</h3>
+                  <div className="section-content">
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Salário mínimo</label>
+                        <span>{job.salarioMin ? `R$ ${job.salarioMin.toLocaleString('pt-BR')}` : '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Salário máximo</label>
+                        <span>{job.salarioMax ? `R$ ${job.salarioMax.toLocaleString('pt-BR')}` : '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Bônus/Comissão</label>
+                        <span>{job.bonusComissao || '-'}</span>
+                      </div>
+                    </div>
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Benefícios</label>
+                        <p>{job.beneficios || '-'}</p>
+                      </div>
+                      <div className="expanded-field"></div>
+                      <div className="expanded-field"></div>
+                    </div>
                   </div>
                 </div>
-              ))}
+
+                {/* Seção: Processo Seletivo */}
+                <div className="expanded-section">
+                  <h3 className="section-title">Processo Seletivo</h3>
+                  <div className="section-content">
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Previsão de início</label>
+                        <span>{job.previsaoInicio ? new Date(job.previsaoInicio).toLocaleDateString('pt-BR') : '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Localização completa</label>
+                        <span>{job.localizacao || '-'}</span>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Etapas do processo</label>
+                        {job.etapasProcesso && job.etapasProcesso.length > 0 ? (
+                          <div className="tags-list">
+                            {job.etapasProcesso.map((item, idx) => (
+                              <span key={idx} className="tag-mini">{item}</span>
+                            ))}
+                          </div>
+                        ) : <span>-</span>}
+                      </div>
+                    </div>
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Tipos de teste</label>
+                        {job.tiposTesteEntrevista && job.tiposTesteEntrevista.length > 0 ? (
+                          <div className="tags-list">
+                            {job.tiposTesteEntrevista.map((item, idx) => (
+                              <span key={idx} className="tag-mini">{item}</span>
+                            ))}
+                          </div>
+                        ) : <span>-</span>}
+                      </div>
+                      <div className="expanded-field"></div>
+                      <div className="expanded-field"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção: Informações adicionais */}
+                <div className="expanded-section">
+                  <h3 className="section-title">Informações Adicionais</h3>
+                  <div className="section-content">
+                    <div className="expanded-field-row">
+                      <div className="expanded-field">
+                        <label>Sobre o time</label>
+                        <p>{job.sobreTime || '-'}</p>
+                      </div>
+                      <div className="expanded-field">
+                        <label>Diferenciais</label>
+                        <p>{job.diferenciais || '-'}</p>
+                      </div>
+                      <div className="expanded-field"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Search and Filters */}
+          <div className="filters-card">
+            <div className="search-row">
+              <Search size={20} />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+
+            <div className="sort-row">
+              <button
+                className={`sort-button ${sortBy === 'date' ? 'active' : ''}`}
+                onClick={() => setSortBy('date')}
+              >
+                <Calendar size={18} />
+                Data de inscrição
+              </button>
+              <button
+                className={`sort-button ${sortBy === 'name' ? 'active' : ''}`}
+                onClick={() => setSortBy('name')}
+              >
+                <SortAsc size={18} />
+                Ordem alfabética
+              </button>
+              <button
+                className="sort-order-button"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                <ArrowUpDown size={18} />
+                {sortOrder === 'asc' ? 'Crescente' : 'Decrescente'}
+              </button>
+            </div>
+          </div>
+
+          {/* Candidates Table */}
+          {filteredApplications.length === 0 ? (
+            <div className="empty-state">
+              <p>Nenhum candidato encontrado</p>
+            </div>
+          ) : (
+            <div className="candidates-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Data de inscrição</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredApplications.map((app) => (
+                    <tr key={app.id}>
+                      <td className="candidate-name">{app.candidateNome}</td>
+                      <td>{app.candidateEmail}</td>
+                      <td>{new Date(app.dataInscricao).toLocaleDateString('pt-BR')}</td>
+                      <td className="actions-cell">
+                        <button
+                          className="btn-icon btn-primary"
+                          onClick={() => handleViewDetails(app.id)}
+                          title="Ver detalhes"
+                        >
+                          <Eye size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
