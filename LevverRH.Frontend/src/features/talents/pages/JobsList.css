@@ -74,7 +74,7 @@
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: var(--spacing-lg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--black-alpha-10);
 }
 
 .search-row {
@@ -277,7 +277,7 @@
   cursor: pointer;
   transition: var(--transition-fast);
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px var(--black-alpha-05);
 }
 
 .btn-clear:hover {
@@ -285,7 +285,7 @@
   border-color: var(--primary-color);
   color: var(--primary-color);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(113, 59, 219, 0.15);
+  box-shadow: 0 2px 4px var(--primary-color-alpha-15);
 }
 
 /* Tabela */
@@ -294,7 +294,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px var(--black-alpha-05);
 }
 
 .jobs-table table {
@@ -393,7 +393,7 @@
   color: var(--text-primary);
   cursor: pointer;
   transition: var(--transition-fast);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px var(--black-alpha-05);
 }
 
 .btn-icon:hover {
@@ -401,7 +401,7 @@
   border-color: var(--primary-color);
   color: var(--background-color);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(113, 59, 219, 0.25);
+  box-shadow: 0 2px 4px var(--primary-color-alpha-30);
 }
 
 /* States */

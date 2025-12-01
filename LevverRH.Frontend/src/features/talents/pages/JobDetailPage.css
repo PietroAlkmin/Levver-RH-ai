@@ -24,7 +24,7 @@
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--black-alpha-10);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -100,7 +100,7 @@
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--black-alpha-10);
 }
 
 .job-info-section h2 {
@@ -177,7 +177,7 @@
 .form-group textarea:focus {
   outline: none;
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-10);
 }
 
 .save-button {
@@ -201,7 +201,7 @@
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--black-alpha-10);
 }
 
 .candidates-section h2 {
@@ -232,7 +232,7 @@
 }
 
 .candidate-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px var(--black-alpha-10);
 }
 
 .candidate-header {

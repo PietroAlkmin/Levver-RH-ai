@@ -171,10 +171,10 @@
 }
 
 .job-form-content::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--black-alpha-20);
   border-radius: 3px;
 }
 
 .job-form-content::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--black-alpha-30);
 }

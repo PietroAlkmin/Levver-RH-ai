@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { Check, X } from 'lucide-react';
+import { DynamicLogo } from '../../components/common/DynamicLogo';
 import { FileUploadResume } from '../../components/FileUploadResume';
 import { 
   publicApplicationService, 
@@ -10,7 +12,7 @@ import {
 } from '../../services/publicApplicationService';
 import './JobApplication.css';
 
-interface ApplicationFormData {
+interface FormData {
   nome: string;
   email: string;
   telefone: string;
@@ -22,48 +24,47 @@ interface ApplicationFormData {
 
 export const JobApplication: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
-
   const [job, setJob] = useState<PublicJobDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [curriculoFile, setCurriculoFile] = useState<File | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<ApplicationFormData>({
-    defaultValues: {
-      criarConta: false,
-    },
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormData>({
+    defaultValues: { criarConta: false }
   });
 
   const watchCriarConta = watch('criarConta');
+  const watchSenha = watch('senha');
+  const watchConfirmarSenha = watch('confirmarSenha');
+
+  const senhaValida = watchSenha && watchSenha.length >= 6;
+  const senhasIguais = watchSenha && watchConfirmarSenha && watchSenha === watchConfirmarSenha;
 
   useEffect(() => {
-    loadJobDetails();
+    loadJob();
   }, [jobId]);
 
-  const loadJobDetails = async () => {
+  const loadJob = async () => {
     try {
       setLoading(true);
-      const jobData = await publicApplicationService.getPublicJobDetail(jobId!);
-      setJob(jobData);
+      const data = await publicApplicationService.getPublicJobDetail(jobId!);
+      setJob(data);
     } catch (error) {
-      console.error('Erro ao carregar detalhes da vaga:', error);
-      toast.error('Erro ao carregar detalhes da vaga');
+      toast.error('Erro ao carregar vaga');
     } finally {
       setLoading(false);
     }
   };
 
-  const onSubmit = async (data: ApplicationFormData) => {
-    // Validar senha se criar conta
+  const onSubmit = async (data: FormData) => {
     if (data.criarConta) {
       if (!data.senha || data.senha.length < 6) {
         toast.error('A senha deve ter pelo menos 6 caracteres');
+        return;
+      }
+      if (!data.confirmarSenha) {
+        toast.error('Confirme sua senha');
         return;
       }
       if (data.senha !== data.confirmarSenha) {
@@ -79,7 +80,6 @@ export const JobApplication: React.FC = () => {
 
     try {
       setSubmitting(true);
-
       const applicationData: CreatePublicApplicationDTO = {
         jobId: jobId!,
         nome: data.nome,
@@ -90,216 +90,129 @@ export const JobApplication: React.FC = () => {
         senha: data.criarConta ? data.senha : undefined,
       };
 
-      const response = await publicApplicationService.submitApplication(
-        applicationData,
-        curriculoFile
-      );
-
+      const response = await publicApplicationService.submitApplication(applicationData, curriculoFile);
       setSubmitted(true);
       toast.success('Candidatura enviada com sucesso!');
 
-      // Se criou conta, fazer login automático
       if (response.contaCriada && response.accessToken) {
         localStorage.setItem('token', response.accessToken);
         toast.success('Conta criada! Redirecionando...');
-        setTimeout(() => {
-          window.location.href = '/painel';
-        }, 3000);
+        setTimeout(() => window.location.href = '/painel', 3000);
       }
     } catch (error: any) {
-      console.error('Erro ao enviar candidatura:', error);
       toast.error(error.message || 'Erro ao enviar candidatura');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <p>Carregando vaga...</p>
-      </div>
-    );
-  }
-
-  if (!job) {
-    return (
-      <div className="error-container">
-        <p>Vaga não encontrada</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="app-loading">Carregando...</div>;
+  if (!job) return <div className="app-loading">Vaga não encontrada</div>;
 
   if (submitted) {
     return (
-      <div className="success-container">
-        <div className="success-card">
-          <div className="success-icon">✓</div>
-          <h2>Candidatura enviada com sucesso!</h2>
-          <p>Recebemos sua candidatura para a vaga de <strong>{job?.titulo || 'esta posição'}</strong>{job?.nomeEmpresa ? ` na ${job.nomeEmpresa}` : ''}.</p>
-          <p className="success-subtext">Nossa equipe irá analisar seu perfil e entraremos em contato em breve.</p>
+      <div className="app-container">
+        <div className="app-content">
+          <div className="app-success">
+            <div className="app-logo">
+              <DynamicLogo />
+            </div>
+            <h1>Candidatura enviada!</h1>
+            <p>Recebemos sua candidatura para <strong>{job.titulo}</strong>{job.nomeEmpresa && <> na {job.nomeEmpresa}</>}.</p>
+            <p>Nossa equipe irá analisar seu perfil e entraremos em contato em breve.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="public-job-form">
-      <div className="public-job-container">
-        {/* Header da vaga */}
-        <div className="job-header-card">
-          <div className="job-header-banner"></div>
-          <div className="job-header-content">
-            <div className="job-header-flex">
-              {job.logoEmpresa ? (
-                <img src={job.logoEmpresa} alt={job.nomeEmpresa || 'Empresa'} className="job-logo" />
-              ) : (
-                <div className="job-logo-placeholder">
-                  <span>{job.nomeEmpresa?.charAt(0) || 'E'}</span>
-                </div>
-              )}
-              <div className="job-header-info">
-                <h1>{job.titulo || 'Vaga'}</h1>
-                <p className="job-company">{job.nomeEmpresa || 'Empresa'}</p>
-                <div className="job-tags">
-                  {job.cidade && job.estado && (
-                    <span className="tag tag-blue">📍 {job.cidade}, {job.estado}</span>
-                  )}
-                  {job.tipoContrato && (
-                    <span className="tag tag-purple">⏰ {job.tipoContrato}</span>
-                  )}
-                  {job.modalidade && (
-                    <span className="tag tag-pink">💼 {job.modalidade}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {(job.salarioMin || job.salarioMax) && (
-              <div className="salary-box">
-                <span className="salary-label">Salário:</span>
-                <span className="salary-value">
-                  {job.salarioMin && job.salarioMax
-                    ? `R$ ${job.salarioMin.toLocaleString('pt-BR')} - R$ ${job.salarioMax.toLocaleString('pt-BR')}`
-                    : job.salarioMin
-                    ? `A partir de R$ ${job.salarioMin.toLocaleString('pt-BR')}`
-                    : `Até R$ ${job.salarioMax?.toLocaleString('pt-BR')}`}
-                </span>
-              </div>
-            )}
+    <div className="app-container">
+      <div className="app-content">
+        <div className="app-card">
+          <div className="app-logo">
+            <DynamicLogo />
           </div>
+          <h1>{job.titulo}</h1>
+          {job.nomeEmpresa && <p className="company">{job.nomeEmpresa}</p>}
         </div>
 
-        {/* Formulário */}
-        <div className="form-card">
-          <h2>Candidate-se para esta vaga</h2>
-          <p className="form-subtitle">Preencha o formulário abaixo e anexe seu currículo</p>
-
+        <div className="app-card">
+          <h2>Candidate-se</h2>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="nome">Nome completo *</label>
-                <input
-                  id="nome"
-                  type="text"
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                  placeholder="Seu nome completo"
-                />
-                {errors.nome && <span className="error-message">{errors.nome.message}</span>}
+                <label>Nome *</label>
+                <input {...register('nome', { required: 'Campo obrigatório' })} placeholder="Seu nome completo" />
+                {errors.nome && <span className="error">{errors.nome.message}</span>}
               </div>
-
               <div className="form-group">
-                <label htmlFor="email">E-mail *</label>
-                <input
-                  id="email"
-                  type="email"
-                  {...register('email', { 
-                    required: 'E-mail é obrigatório',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'E-mail inválido'
-                    }
-                  })}
-                  placeholder="seu@email.com"
-                />
-                {errors.email && <span className="error-message">{errors.email.message}</span>}
+                <label>E-mail *</label>
+                <input {...register('email', { required: 'Campo obrigatório' })} placeholder="seu@email.com" />
+                {errors.email && <span className="error">{errors.email.message}</span>}
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="telefone">Telefone *</label>
-                <input
-                  id="telefone"
-                  type="tel"
-                  {...register('telefone', { required: 'Telefone é obrigatório' })}
-                  placeholder="(00) 00000-0000"
-                />
-                {errors.telefone && <span className="error-message">{errors.telefone.message}</span>}
+                <label>Telefone *</label>
+                <input {...register('telefone', { required: 'Campo obrigatório' })} placeholder="(00) 00000-0000" />
+                {errors.telefone && <span className="error">{errors.telefone.message}</span>}
               </div>
-
               <div className="form-group">
-                <label htmlFor="linkedinUrl">LinkedIn (opcional)</label>
-                <input
-                  id="linkedinUrl"
-                  type="url"
-                  {...register('linkedinUrl')}
-                  placeholder="linkedin.com/in/seu-perfil"
-                />
+                <label>LinkedIn</label>
+                <input {...register('linkedinUrl')} placeholder="linkedin.com/in/seu-perfil" />
               </div>
             </div>
 
             <div className="form-group">
               <label>Currículo *</label>
-              <FileUploadResume
-                onFileSelect={(file) => setCurriculoFile(file)}
-              />
+              <FileUploadResume onFileSelect={(file) => setCurriculoFile(file)} />
             </div>
 
-            {/* Opção criar conta */}
-            <div className="account-section">
-              <div className="checkbox-group">
-                <input
-                  id="criarConta"
-                  type="checkbox"
-                  {...register('criarConta')}
-                />
-                <label htmlFor="criarConta" className="checkbox-label">
-                  Desejo criar uma conta para acompanhar minhas candidaturas
-                </label>
-              </div>
+            <div className="checkbox-section">
+              <label>
+                <input type="checkbox" {...register('criarConta')} />
+                Criar conta para acompanhar candidaturas
+              </label>
 
               {watchCriarConta && (
                 <div className="password-fields">
                   <div className="form-row">
                     <div className="form-group">
-                      <label htmlFor="senha">Senha *</label>
-                      <input
-                        id="senha"
-                        type="password"
-                        {...register('senha')}
-                        placeholder="Mínimo 6 caracteres"
-                      />
+                      <label>Senha *</label>
+                      <div className="password-input-wrapper">
+                        <input type="password" {...register('senha')} placeholder="Mínimo 6 caracteres" />
+                        {watchSenha && (
+                          <span className={`password-indicator ${senhaValida ? 'valid' : 'invalid'}`}>
+                            {senhaValida ? <Check size={16} /> : <X size={16} />}
+                          </span>
+                        )}
+                      </div>
+                      {watchSenha && !senhaValida && (
+                        <span className="error">Mínimo 6 caracteres</span>
+                      )}
                     </div>
-
                     <div className="form-group">
-                      <label htmlFor="confirmarSenha">Confirmar senha *</label>
-                      <input
-                        id="confirmarSenha"
-                        type="password"
-                        {...register('confirmarSenha')}
-                        placeholder="Digite a senha novamente"
-                      />
+                      <label>Confirmar senha *</label>
+                      <div className="password-input-wrapper">
+                        <input type="password" {...register('confirmarSenha')} placeholder="Digite novamente" />
+                        {watchConfirmarSenha && (
+                          <span className={`password-indicator ${senhasIguais ? 'valid' : 'invalid'}`}>
+                            {senhasIguais ? <Check size={16} /> : <X size={16} />}
+                          </span>
+                        )}
+                      </div>
+                      {watchConfirmarSenha && !senhasIguais && (
+                        <span className="error">As senhas não coincidem</span>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <button 
-              type="submit" 
-              className="submit-button"
-              disabled={submitting}
-            >
+            <button type="submit" className="btn-submit" disabled={submitting}>
               {submitting ? 'Enviando...' : 'Enviar candidatura'}
             </button>
           </form>
