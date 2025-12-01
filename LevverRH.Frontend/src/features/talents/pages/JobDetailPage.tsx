@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Search, ChevronDown, ChevronUp, Edit, ArrowUpDown, Calendar, SortAsc, Eye, MapPin, Briefcase, Users, Share2 } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Edit, ArrowUpDown, Calendar, SortAsc, Eye, MapPin, Briefcase, Users, Share2, ArrowLeft } from 'lucide-react';
 import { talentsService } from '../services/talentsService';
 import { JobDetailDTO, ApplicationDTO } from '../types/talents.types';
 import { MainLayout } from '../../../components/layout/MainLayout/MainLayout';
@@ -104,7 +104,12 @@ export const JobDetailPage: React.FC = () => {
       <div className="job-detail-container">
         {/* Header */}
         <div className="job-detail-header">
-          <h1>Lista de candidatos</h1>
+          <div className="header-title-group">
+            <button className="btn-back" onClick={() => navigate('/talents/vagas')} title="Voltar para lista de vagas">
+              <ArrowLeft size={20} />
+            </button>
+            <h1>Lista de candidatos</h1>
+          </div>
           <button className="btn-edit-job" onClick={handleEdit}>
             <Edit size={18} />
             Editar vaga
