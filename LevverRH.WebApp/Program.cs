@@ -102,16 +102,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS para comunica��o com React
+// CORS para comunicação com React
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>
-  {
-    policy.WithOrigins(
-         "http://localhost:5173",           // Vite dev server
-     "https://localhost:5173"   // HTTPS se usar
-      )
-     .AllowAnyMethod()
+    {
+        policy.WithOrigins(
+            "http://localhost:5173",           // Vite dev server local
+            "https://localhost:5173",          // HTTPS local
+            "https://kind-rock-03a42970f.azurestaticapps.net"  // Frontend em produção
+        )
+        .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();        // Importante para JWT
     });
