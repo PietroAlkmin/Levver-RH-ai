@@ -20,6 +20,15 @@ jobs:
           submodules: true
           lfs: false
       
+      - name: Debug - List files
+        run: |
+          echo "=== Root directory ==="
+          ls -la
+          echo "=== Looking for Frontend folder ==="
+          find . -name "*Frontend*" -type d
+          echo "=== Looking for package.json ==="
+          find . -name "package.json"
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
