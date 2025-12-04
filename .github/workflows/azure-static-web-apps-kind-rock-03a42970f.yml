@@ -27,7 +27,7 @@ jobs:
       
       - name: Install dependencies
         working-directory: ./LevverRH.Frontend
-        run: npm ci
+        run: npm install
       
       - name: Build frontend
         working-directory: ./LevverRH.Frontend
